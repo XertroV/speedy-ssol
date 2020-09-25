@@ -1,0 +1,92 @@
+Initialize engine version: 4.1.2f1 (911c7369eeac)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 9.0c [aticfx32.dll 27.20.1034.6]
+    Renderer: Radeon RX Vega
+    Vendor:   ATI
+    VRAM:     3072 MB (via DXGI)
+    Caps:     Shader=30 DepthRT=1 NativeDepth=1 NativeShadow=1 DF16=1 DF24=1 INTZ=1 RAWZ=0 NULL=1 RESZ=1 SlowINTZ=1
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\XertroV\aslowerspeedoflight\SSOL_PATCHED\A Slower Speed of Light_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\XertroV\aslowerspeedoflight\SSOL_PATCHED\A Slower Speed of Light_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\XertroV\aslowerspeedoflight\SSOL_PATCHED\A Slower Speed of Light_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\XertroV\aslowerspeedoflight\SSOL_PATCHED\A Slower Speed of Light_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+- Completed reload, in  0.038 seconds
+desktop: 3440x1440 100Hz; virtual: 8560x1440 at -2560,0
+<RI> Initializing input.
+
+<RI> Input initialized.
+
+load level 1 -- PreLoaderScript.Update/2
+ 
+(Filename: C:/BuildAgent/work/7535de4ca26c26ac/Runtime/ExportGenerated/StandalonePlayer/UnityEngineDebug.cpp Line: 54)
+
+The file 'C:/Users/XertroV/aslowerspeedoflight/SSOL_PATCHED/A Slower Speed of Light_Data/level0' is corrupted! Remove it and launch unity again!
+[Position out of bounds! 5096 > 5092]
+ 
+(Filename:  Line: 269)
+
+The file 'C:/Users/XertroV/aslowerspeedoflight/SSOL_PATCHED/A Slower Speed of Light_Data/level0' is corrupted! Remove it and launch unity again!
+[Position out of bounds! 5096 > 5092]
+ 
+(Filename:  Line: 276)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0 / Dirty serialized files: 0)
+
+Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 107.
+Total: 0.629500 ms (FindLiveObjects: 0.003600 ms CreateObjectMapping: 0.004900 ms MarkObjects: 0.112400 ms  DeleteObjects: 0.006100 ms)
+
+loading level 2 - MenuScripts.Update
+ 
+(Filename: C:/BuildAgent/work/7535de4ca26c26ac/Runtime/ExportGenerated/StandalonePlayer/UnityEngineDebug.cpp Line: 54)
+
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0 / Dirty serialized files: 0)
+
+Unloading 22 unused Assets to reduce memory usage. Loaded Objects now: 97.
+Total: 0.672400 ms (FindLiveObjects: 0.003800 ms CreateObjectMapping: 0.007100 ms MarkObjects: 0.127900 ms  DeleteObjects: 0.025800 ms)
+
+load level 3 -- TempInstScripts.Update/1
+ 
+(Filename: C:/BuildAgent/work/7535de4ca26c26ac/Runtime/ExportGenerated/StandalonePlayer/UnityEngineDebug.cpp Line: 54)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0 / Dirty serialized files: 0)
+
+Unloading 14 unused Assets to reduce memory usage. Loaded Objects now: 14998.
+Total: 4.663600 ms (FindLiveObjects: 0.419100 ms CreateObjectMapping: 0.036300 ms MarkObjects: 0.517300 ms  DeleteObjects: 3.157400 ms)
+
+load level 4 -- WinLevelScript.OnGUI/1
+ 
+(Filename: C:/BuildAgent/work/7535de4ca26c26ac/Runtime/ExportGenerated/StandalonePlayer/UnityEngineDebug.cpp Line: 54)
+
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0 / Dirty serialized files: 0)
+
+Unloading 9307 unused Assets to reduce memory usage. Loaded Objects now: 104.
+Total: 32.316799 ms (FindLiveObjects: 0.155600 ms CreateObjectMapping: 0.716600 ms MarkObjects: 0.183400 ms  DeleteObjects: 30.710600 ms)
+
+load level 5 -- EndingScript.Update/1
+ 
+(Filename: C:/BuildAgent/work/7535de4ca26c26ac/Runtime/ExportGenerated/StandalonePlayer/UnityEngineDebug.cpp Line: 54)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0 / Dirty serialized files: 0)
+
+Unloading 13 unused Assets to reduce memory usage. Loaded Objects now: 108.
+Total: 1.774700 ms (FindLiveObjects: 0.003200 ms CreateObjectMapping: 0.013800 ms MarkObjects: 0.136900 ms  DeleteObjects: 1.110100 ms)
+
+load level 1 -- WhatHappened.Update/1
+ 
+(Filename: C:/BuildAgent/work/7535de4ca26c26ac/Runtime/ExportGenerated/StandalonePlayer/UnityEngineDebug.cpp Line: 54)
+
+The file 'C:/Users/XertroV/aslowerspeedoflight/SSOL_PATCHED/A Slower Speed of Light_Data/level0' is corrupted! Remove it and launch unity again!
+[Position out of bounds! 5096 > 5092]
+ 
+(Filename:  Line: 269)
+
+The file 'C:/Users/XertroV/aslowerspeedoflight/SSOL_PATCHED/A Slower Speed of Light_Data/level0' is corrupted! Remove it and launch unity again!
+[Position out of bounds! 5096 > 5092]
+ 
+(Filename:  Line: 276)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0 / Dirty serialized files: 0)
+
+Unloading 16 unused Assets to reduce memory usage. Loaded Objects now: 115.
+Total: 1.201100 ms (FindLiveObjects: 0.004200 ms CreateObjectMapping: 0.013800 ms MarkObjects: 0.135000 ms  DeleteObjects: 0.541800 ms)
