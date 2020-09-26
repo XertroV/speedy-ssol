@@ -287,7 +287,6 @@ public class GUIScripts : MonoBehaviour
                 GUI.Box(new Rect((float)Screen.width - col2Offset, 0f, vecSplits.x, vecSplits.y), new GUIContent("+/-"));
                 GUI.skin.box.alignment = TextAnchor.MiddleLeft;
                 bool doneOnePreview = false;
-                Debug.Log("splits");
                 for (int s = 0; s < this.splitOn.Length; s++)
                 {
                     GUI.skin.box.normal.background = this.bgTex[s % 2];
@@ -296,7 +295,6 @@ public class GUIScripts : MonoBehaviour
                     GUI.Box(new Rect((float)Screen.width - timerBoxWidth, vecSplits.y * (float)(s + 1), timerBoxWidth, vecSplits.y), new GUIContent(this.splitNames[s]));
                     if (tempTime > 0.0 || !doneOnePreview)
                     {
-                        Debug.Log("drawASplit");
                         if (tempTime == 0.0 && !doneOnePreview)
                         {
                             doneOnePreview = true;

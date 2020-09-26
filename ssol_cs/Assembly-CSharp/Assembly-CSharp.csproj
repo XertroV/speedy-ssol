@@ -63,6 +63,7 @@
     <Compile Include="RouteWr20200921Long.cs" />
     <Compile Include="RouteWr20200921Short.cs" />
     <Compile Include="SenderScript.cs" />
+    <Compile Include="Tags.cs" />
     <Compile Include="TemporaryInstructionScripts.cs" />
     <Compile Include="WhatHappenedScript.cs" />
     <Compile Include="WinLevelScript.cs" />

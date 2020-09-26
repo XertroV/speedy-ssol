@@ -1,249 +1,298 @@
 ﻿using System;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 
-// Token: 0x02000014 RID: 20
 public class RelativisticParent : MonoBehaviour
 {
-    // Token: 0x06000084 RID: 132 RVA: 0x0000B228 File Offset: 0x00009428
-    private void Start()
+    //Keep track of our own Mesh Filter
+    private MeshFilter meshFilter;
+    //Store this object's velocity here.
+    public Vector3 viw;
+    private GameState state;
+    //When was this object created? use for moving objects
+    private float startTime = 0;
+    //When should we die? again, for moving objects
+    private float deathTime = 0;
+
+    // Get the start time of our object, so that we know where not to draw it
+    public void SetStartTime()
+    {
+        startTime = (float)GameObject.FindGameObjectWithTag(Tags.player).GetComponent<GameState>().TotalTimeWorld;
+    }
+    //Set the death time, so that we know at what point to destroy the object in the player's view point.
+    public void SetDeathTime()
+    {
+        deathTime = (float)state.TotalTimeWorld;
+    }
+    //This is a function that just ensures we're slower than our maximum speed. The VIW that Unity sets SHOULD (it's creator-chosen) be smaller than the maximum speed.
+    private void checkSpeed()
+    {
+        if (viw.magnitude > state.MaxSpeed - .01)
+        {
+            viw = viw.normalized * (float)(state.MaxSpeed - .01f);
+        }
+    }
+    // Use this for initialization
+    void Start()
     {
         if (base.name == "maptile")
         {
             return;
         }
-        DateTime now = DateTime.Now;
-        if (base.GetComponent<ObjectMeshDensity>())
+        if (GetComponent<ObjectMeshDensity>())
         {
-            base.GetComponent<ObjectMeshDensity>().enabled = false;
+            GetComponent<ObjectMeshDensity>().enabled = false;
         }
-        int num = 0;
-        int num2 = 0;
-        this.checkSpeed();
-        Matrix4x4 worldToLocalMatrix = base.transform.worldToLocalMatrix;
-        MeshFilter[] componentsInChildren = base.GetComponentsInChildren<MeshFilter>();
-        int[] array = new int[componentsInChildren.Length];
-        MeshRenderer[] componentsInChildren2 = base.GetComponentsInChildren<MeshRenderer>();
-        int num3 = componentsInChildren.Length;
-        int num4 = 0;
-        for (int i = 0; i < num3; i++)
+        int vertCount = 0, triangleCount = 0;
+        checkSpeed();
+        Matrix4x4 worldLocalMatrix = transform.worldToLocalMatrix;
+
+        //This code combines the meshes of children of parent objects
+        //This increases our FPS by a ton
+        //Get an array of the meshfilters
+        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
+        //Count submeshes
+        int[] subMeshCount = new int[meshFilters.Length];
+        //Get all the meshrenderers
+        MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
+        //Length of our original array
+        int meshFilterLength = meshFilters.Length;
+        //And a counter
+        int subMeshCounts = 0;
+
+        //For every meshfilter,
+        for (int y = 0; y < meshFilterLength; y++)
         {
-            if (!(componentsInChildren[i] == null) && !(componentsInChildren[i].sharedMesh == null))
+            //If it's null, ignore it.
+            if (meshFilters[y] == null) continue;
+            if (meshFilters[y].sharedMesh == null) continue;
+            //else add its vertices to the vertcount
+            vertCount += meshFilters[y].sharedMesh.vertices.Length;
+            //Add its triangles to the count
+            triangleCount += meshFilters[y].sharedMesh.triangles.Length;
+            //Add the number of submeshes to its spot in the array
+            subMeshCount[y] = meshFilters[y].mesh.subMeshCount;
+            //And add up the total number of submeshes
+            subMeshCounts += meshFilters[y].mesh.subMeshCount;
+        }
+        // Get a temporary array of EVERY vertex
+        Vector3[] tempVerts = new Vector3[vertCount];
+        //And make a triangle array for every submesh
+        int[][] tempTriangles = new int[subMeshCounts][];
+
+        for (int u = 0; u < subMeshCounts; u++)
+        {
+            //Make every array the correct length of triangles
+            tempTriangles[u] = new int[triangleCount];
+        }
+        //Also grab our UV texture coordinates
+        Vector2[] tempUVs = new Vector2[vertCount];
+        //And store a number of materials equal to the number of submeshes.
+        Material[] tempMaterials = new Material[subMeshCounts];
+
+        int vertIndex = 0;
+        Mesh MFs;
+        int subMeshIndex = 0;
+        //For all meshfilters
+        for (int i = 0; i < meshFilterLength; i++)
+        {
+            //just doublecheck that the mesh isn't null
+            MFs = meshFilters[i].sharedMesh;
+            if (MFs == null) continue;
+
+            //Otherwise, for all submeshes in the current mesh
+            for (int q = 0; q < subMeshCount[i]; q++)
             {
-                num += componentsInChildren[i].sharedMesh.vertices.Length;
-                num2 += componentsInChildren[i].sharedMesh.triangles.Length;
-                array[i] = componentsInChildren[i].mesh.subMeshCount;
-                num4 += componentsInChildren[i].mesh.subMeshCount;
-            }
-        }
-        Vector3[] array2 = new Vector3[num];
-        int[][] array3 = new int[num4][];
-        for (int j = 0; j < num4; j++)
-        {
-            array3[j] = new int[num2];
-        }
-        Vector2[] array4 = new Vector2[num];
-        Material[] array5 = new Material[num4];
-        int num5 = 0;
-        int num6 = 0;
-        for (int k = 0; k < num3; k++)
-        {
-            Mesh sharedMesh = componentsInChildren[k].sharedMesh;
-            if (!(sharedMesh == null))
-            {
-                for (int l = 0; l < array[k]; l++)
+                //grab its material
+                tempMaterials[subMeshIndex] = meshRenderers[i].materials[q];
+                //Grab its triangles
+                int[] tempSubTriangles = MFs.GetTriangles(q);
+                //And put them into the submesh's triangle array
+                for (int k = 0; k < tempSubTriangles.Length; k++)
                 {
-                    array5[num6] = componentsInChildren2[k].materials[l];
-                    int[] triangles = sharedMesh.GetTriangles(l);
-                    for (int m = 0; m < triangles.Length; m++)
-                    {
-                        array3[num6][m] = triangles[m] + num5;
-                    }
-                    num6++;
+                    tempTriangles[subMeshIndex][k] = tempSubTriangles[k] + vertIndex;
                 }
-                Matrix4x4 matrix4x = worldToLocalMatrix * componentsInChildren[k].transform.localToWorldMatrix;
-                for (int n = 0; n < sharedMesh.vertices.Length; n++)
+                //Increment the submesh index
+                subMeshIndex++;
+            }
+            Matrix4x4 cTrans = worldLocalMatrix * meshFilters[i].transform.localToWorldMatrix;
+            //For all the vertices in the mesh
+            for (int v = 0; v < MFs.vertices.Length; v++)
+            {
+                //Get the vertex and the UV coordinate
+                tempVerts[vertIndex] = cTrans.MultiplyPoint3x4(MFs.vertices[v]);
+                tempUVs[vertIndex] = MFs.uv[v];
+                vertIndex++;
+            }
+            //And delete that gameobject.
+            meshFilters[i].gameObject.SetActive(false);
+        }
+        //Put it all together now.
+        Mesh myMesh = new Mesh();
+        //Make the mesh have as many submeshes as you need
+        myMesh.subMeshCount = subMeshCounts;
+        //Set its vertices to tempverts
+        myMesh.vertices = tempVerts;
+        //start at the first submesh
+        subMeshIndex = 0;
+        //For every submesh in each meshfilter
+        for (int l = 0; l < meshFilterLength; l++)
+        {
+            for (int g = 0; g < subMeshCount[l]; g++)
+            {
+                //Set a new submesh, using the triangle array and its submesh index (built in unity function)
+                myMesh.SetTriangles(tempTriangles[subMeshIndex], subMeshIndex);
+                //increment the submesh index
+                subMeshIndex++;
+            }
+        }
+        //Just shunt in the UV coordinates, we don't need to change them
+        myMesh.uv = tempUVs;
+        //THEN totally replace our object's mesh with this new, combined mesh
+        GetComponent<MeshFilter>().mesh = myMesh;
+        GetComponent<MeshRenderer>().enabled = true;
+        GetComponent<MeshFilter>().mesh.RecalculateNormals();
+        GetComponent<MeshFilter>().GetComponent<Renderer>().materials = tempMaterials;
+
+        transform.gameObject.SetActive(true);
+        //End section of combining meshes
+
+
+
+        state = GameObject.FindGameObjectWithTag(Tags.player).GetComponent<GameState>();
+
+        meshFilter = GetComponent<MeshFilter>();
+
+        MeshRenderer tempRenderer = GetComponent<MeshRenderer>();
+
+
+
+        //Then the standard RelativisticObject startup
+        if (tempRenderer.materials[0].mainTexture != null)
+        {
+            //So that we can set unique values to every moving object, we have to instantiate a material
+            //It's the same as our old one, but now it's not connected to every other object with the same material
+            Material quickSwapMaterial = Instantiate((tempRenderer as Renderer).materials[0]) as Material;
+            //Then, set the value that we want
+            quickSwapMaterial.SetFloat("_viw", 0);
+
+            //And stick it back into our renderer. We'll do the SetVector thing every frame.
+            tempRenderer.materials[0] = quickSwapMaterial;
+
+            //set our start time and start position in the shader.
+            tempRenderer.materials[0].SetFloat("_strtTime", (float)startTime);
+            tempRenderer.materials[0].SetVector("_strtPos", new Vector4(transform.position.x, transform.position.y, transform.position.z, 0));
+        }
+
+        //This code is a hack to ensure that frustrum culling does not take place
+        //It changes the render bounds so that everything is contained within them
+        Transform camTransform = Camera.main.transform;
+        float distToCenter = (Camera.main.farClipPlane - Camera.main.nearClipPlane) / 2.0f;
+        Vector3 center = camTransform.position + camTransform.forward * distToCenter;
+        float extremeBound = 500000.0f;
+        meshFilter.sharedMesh.bounds = new Bounds(center, Vector3.one * extremeBound);
+
+
+        if (GetComponent<ObjectMeshDensity>())
+        {
+            GetComponent<ObjectMeshDensity>().enabled = true;
+        }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+
+        //Grab our renderer.
+        MeshRenderer tempRenderer = GetComponent<MeshRenderer>();
+
+        if (meshFilter != null && !state.MovementFrozen)
+        {
+
+            //Send our object's v/c (Velocity over the Speed of Light) to the shader
+            if (tempRenderer != null)
+            {
+                Vector3 tempViw = viw / (float)state.SpeedOfLight;
+                tempRenderer.materials[0].SetVector("_viw", new Vector4(tempViw.x, tempViw.y, tempViw.z, 0));
+            }
+
+            //As long as our object is actually alive, perform these calculations
+            if (transform != null && deathTime != 0)
+            {
+                //Here I take the angle that the player's velocity vector makes with the z axis
+                float rotationAroundZ = 57.2957795f * Mathf.Acos(Vector3.Dot(state.PlayerVelocityVector, Vector3.forward) / state.PlayerVelocityVector.magnitude);
+
+                if (state.PlayerVelocityVector.sqrMagnitude == 0)
                 {
-                    array2[num5] = matrix4x.MultiplyPoint3x4(sharedMesh.vertices[n]);
-                    array4[num5] = sharedMesh.uv[n];
-                    num5++;
+                    rotationAroundZ = 0;
                 }
-                componentsInChildren[k].gameObject.SetActive(false);
+
+                //Now we turn that rotation into a quaternion
+
+                Quaternion rotateZ = Quaternion.AngleAxis(-rotationAroundZ, Vector3.Cross(state.PlayerVelocityVector, Vector3.forward));
+                //******************************************************************
+
+                //Place the vertex to be changed in a new Vector3
+                Vector3 riw = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+                riw -= state.playerTransform.position;
+
+
+                //And we rotate our point that much to make it as if our magnitude of velocity is in the Z direction
+                riw = rotateZ * riw;
+
+
+                //Here begins the original code, made by the guys behind the Relativity game
+                /****************************
+                     * Start Part 6 Bullet 1
+                
+                */
+
+                //Rotate that velocity!
+                Vector3 storedViw = rotateZ * viw;
+
+                float c = -Vector3.Dot(riw, riw); //first get position squared (position doted with position)
+
+                float b = -(2 * Vector3.Dot(riw, storedViw)); //next get position doted with velocity, should be only in the Z direction
+
+                float a = (float)state.SpeedOfLightSqrd - Vector3.Dot(storedViw, storedViw);
+
+                /****************************
+                 * Start Part 6 Bullet 2
+                 * **************************/
+
+                float tisw = (float)(((-b - (Math.Sqrt((b * b) - 4f * a * c))) / (2f * a)));
+                //If we're past our death time (in the player's view, as seen by tisw)
+                if (state.TotalTimeWorld + tisw > deathTime)
+                {
+                    Destroy(this.gameObject);
+                }
+
+            }
+
+            //make our rigidbody's velocity viw
+            if (GetComponent<Rigidbody>() != null)
+            {
+
+                if (!double.IsNaN((double)state.SqrtOneMinusVSquaredCWDividedByCSquared) && (float)state.SqrtOneMinusVSquaredCWDividedByCSquared != 0)
+                {
+                    Vector3 tempViw = viw;
+                    //ASK RYAN WHY THESE WERE DIVIDED BY THIS
+                    tempViw.x /= (float)state.SqrtOneMinusVSquaredCWDividedByCSquared;
+                    tempViw.y /= (float)state.SqrtOneMinusVSquaredCWDividedByCSquared;
+                    tempViw.z /= (float)state.SqrtOneMinusVSquaredCWDividedByCSquared;
+
+                    GetComponent<Rigidbody>().velocity = tempViw;
+                }
+
+
             }
         }
-        Mesh mesh = new Mesh();
-        mesh.subMeshCount = num4;
-        mesh.vertices = array2;
-        num6 = 0;
-        for (int num7 = 0; num7 < num3; num7++)
-        {
-            for (int num8 = 0; num8 < array[num7]; num8++)
-            {
-                mesh.SetTriangles(array3[num6], num6);
-                num6++;
-            }
-        }
-        mesh.uv = array4;
-        base.GetComponent<MeshFilter>().mesh = mesh;
-        base.GetComponent<MeshRenderer>().enabled = true;
-        base.GetComponent<MeshFilter>().mesh.RecalculateNormals();
-        base.GetComponent<MeshFilter>().renderer.materials = array5;
-        base.transform.gameObject.SetActive(true);
-        this.meshFilter = base.GetComponent<MeshFilter>();
-        this.state = GameObject.FindGameObjectWithTag("Player").GetComponent<GameState>();
-        this.meshFilter = base.GetComponent<MeshFilter>();
-        MeshRenderer component = base.GetComponent<MeshRenderer>();
-        if (component.materials[0].mainTexture != null)
-        {
-            Material material = UnityEngine.Object.Instantiate(component.materials[0]) as Material;
-            material.SetFloat("_viw", 0f);
-            component.materials[0] = material;
-        }
-        Transform transform = Camera.main.transform;
-        float d = (Camera.main.farClipPlane - Camera.main.nearClipPlane) / 2f;
-        Vector3 center = transform.position + transform.forward * d;
-        float d2 = 500000f;
-        this.meshFilter.sharedMesh.bounds = new Bounds(center, Vector3.one * d2);
-        if (base.GetComponent<ObjectMeshDensity>())
-        {
-            base.GetComponent<ObjectMeshDensity>().enabled = true;
-        }
+
+
     }
 
-    // Token: 0x06000085 RID: 133 RVA: 0x000025E2 File Offset: 0x000007E2
-    private void Update()
-    {
-        if (this.meshFilter != null)
-        {
-            bool movementFrozen = this.state.MovementFrozen;
-        }
-    }
 
-    // Token: 0x06000086 RID: 134 RVA: 0x0000B624 File Offset: 0x00009824
-    public Vector3 RecursiveTransform(Vector3 pt, Transform trans)
-    {
-        Vector3 zero = Vector3.zero;
-        if (trans.parent != null)
-        {
-            pt = this.RecursiveTransform(zero, trans.parent);
-            return pt;
-        }
-        return trans.TransformPoint(pt);
-    }
-
-    // Token: 0x06000087 RID: 135 RVA: 0x0000B660 File Offset: 0x00009860
-    public void PeriodicAddTime()
-    {
-        this.meshFilter.transform.Translate(new Vector3(0f, (float)this.amp * Mathf.Sin((float)((double)this.period * this.state.TotalTimeWorld)) - (float)this.amp * Mathf.Sin((float)((double)this.period * (this.state.TotalTimeWorld - this.state.DeltaTimeWorld))), 0f));
-    }
-
-    // Token: 0x06000088 RID: 136 RVA: 0x0000B6DC File Offset: 0x000098DC
-    public Vector3 PeriodicSubtractTime(float tisw, Quaternion rotation)
-    {
-        return rotation * new Vector3(0f, (float)this.amp * Mathf.Sin((float)((double)this.period * (this.state.TotalTimeWorld + (double)tisw))) - (float)this.amp * Mathf.Sin((float)((double)this.period * this.state.TotalTimeWorld)), 0f);
-    }
-
-    // Token: 0x06000089 RID: 137 RVA: 0x0000B744 File Offset: 0x00009944
-    public Vector3 CurrentVelocity()
-    {
-        Vector3 zero = Vector3.zero;
-        zero.y = (float)this.amp * this.period * Mathf.Cos((float)((double)this.period * this.state.TotalTimeWorld));
-        return zero;
-    }
-
-    // Token: 0x0600008A RID: 138 RVA: 0x0000B788 File Offset: 0x00009988
-    public Vector4 CurrentVelocity4()
-    {
-        Vector4 zero = Vector4.zero;
-        zero.y = (float)this.amp * this.period * Mathf.Cos((float)((double)this.period * this.state.TotalTimeWorld));
-        return zero;
-    }
-
-    // Token: 0x0600008B RID: 139 RVA: 0x0000B7CC File Offset: 0x000099CC
-    private void checkSpeed()
-    {
-        if (this.periodic && (float)this.amp * this.period > 4.95f)
-        {
-            this.period = 4.95f / (float)this.amp;
-            return;
-        }
-        if (this.viw.magnitude > 4.95f)
-        {
-            this.viw = this.viw.normalized * 4.95f;
-        }
-    }
-
-    // Token: 0x0600008C RID: 140 RVA: 0x000025FE File Offset: 0x000007FE
-    private void TimeSince(DateTime earlier)
-    {
-        this.TimeSince(earlier, string.Empty, string.Empty, false);
-    }
-
-    // Token: 0x0600008D RID: 141 RVA: 0x00002612 File Offset: 0x00000812
-    private void TimeSince(DateTime earlier, string msgPrefix)
-    {
-        this.TimeSince(earlier, msgPrefix, string.Empty, false);
-    }
-
-    // Token: 0x0600008E RID: 142 RVA: 0x00002622 File Offset: 0x00000822
-    private void TimeSince(DateTime earlier, string msgPrefix, string msgSuffix)
-    {
-        this.TimeSince(earlier, msgPrefix, msgSuffix, false);
-    }
-
-    // Token: 0x0600008F RID: 143 RVA: 0x0000B838 File Offset: 0x00009A38
-    private void TimeSince(DateTime earlier, string msgPrefix, string msgSuffix, bool alwasyPrint)
-    {
-        DateTime now = DateTime.Now;
-        double totalSeconds = now.Subtract(earlier).TotalSeconds;
-        string text = string.Empty;
-        if (totalSeconds > 0.4 || alwasyPrint)
-        {
-            text = string.Concat(new string[]
-            {
-                text,
-                text,
-                "Time: ",
-                now.ToLongTimeString(),
-                " | Start took: ",
-                totalSeconds.ToString("00.000")
-            });
-        }
-        if (totalSeconds > 0.4 || alwasyPrint)
-        {
-            text = text + "\n" + string.Join(" <|> ", new string[]
-            {
-                base.name,
-                base.tag,
-                this.ToString()
-            });
-        }
-        text = string.Join("\n", new string[]
-        {
-            msgPrefix,
-            text,
-            msgSuffix
-        });
-        if (text.Length > 2 || alwasyPrint)
-        {
-            Debug.Log(text);
-        }
-    }
-
-    // Token: 0x0400013C RID: 316
-    private MeshFilter meshFilter;
-
-    // Token: 0x0400013D RID: 317
-    public Vector3 viw;
-
-    // Token: 0x0400013E RID: 318
-    private GameState state;
-
-    // Token: 0x0400013F RID: 319
-    public int amp;
-
-    // Token: 0x04000140 RID: 320
-    public float period;
-
-    // Token: 0x04000141 RID: 321
-    public bool periodic;
 }
