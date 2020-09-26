@@ -253,9 +253,8 @@ public class GameState : MonoBehaviour
         Debug.Log("GameState.Awake: this.orbs.Length=" + this.orbsList.Count.ToString());
         this.orbs = this.orbsList.ToArray();
         this.orbState = new bool[this.orbs.Length];
+        this.orbOrder = new int[this.orbs.Length];
         this.UpdateOrbState();
-
-        this.SetRouteTo(new RouteWr20200921Short());
     }
 
     // Token: 0x06000027 RID: 39
@@ -451,39 +450,21 @@ public class GameState : MonoBehaviour
             bool next = this.orbs[i] == null;
             if (next && !this.orbState[i])
             {
-                for (int s = 0; s < this.splitOn.Length; s++)
-                {
-                    if (i == this.splitOn[s])
-                    {
-                        this.splits[s] = this.totalTimePlayer;
-                    }
-                }
+                var nth = this.orbCollectionList.Count;
+                //for (int s = 0; s < this.splitOn.Length; s++)
+                //{
+                //    if (i == this.splitOn[s])
+                //    {
+                //        this.splits[s] = this.totalTimePlayer;
+                //    }
+                //}
+                this.splits[nth] = this.totalTimePlayer;
+                this.orbOrder[nth] = i;
                 this.orbCollectionList.Add(i);
+                this.orbState[i] = next;
+                this.orbToSplit[i] = this.totalTimePlayer;
             }
-            this.orbState[i] = next;
         }
-    }
-
-    public void SetRouteTo(Route route)
-    {
-        this.SetRouteTo(route, true);
-    }
-
-    public void SetRouteTo(Route route, bool reset)
-    {
-        this.route = route;
-        if (reset)
-        {
-            this.ResetSplits();
-        }
-    }
-
-    public void ResetSplits()
-    {
-        this.splits = new double[100];
-        this.splitOn = RouteWr20200921Long.splitOn;
-        this.splitNames = RouteWr20200921Long.splitNames;
-        this.wrSplits = RouteWr20200921Long.wrSplits;
     }
 
     // Token: 0x04000051 RID: 81
@@ -598,22 +579,14 @@ public class GameState : MonoBehaviour
     public List<GameObject> orbsList;
 
     // Token: 0x04000076 RID: 118
-    public bool[] orbState;
+    public bool[] orbState = new bool[100];
 
     // Token: 0x0400052D RID: 1325
     public double[] splits = new double[100];
 
-    // Token: 0x0400052E RID: 1326
-    public int[] splitOn;
+    public int[] orbOrder = new int[100];
 
-    // Token: 0x040008F4 RID: 2292
-    public string[] splitNames;
+    public Dictionary<int, double> orbToSplit = new Dictionary<int, double>();
 
-    // Token: 0x04001B1F RID: 6943
-    public float[] wrSplits;
-
-    public Route route;
-
-    // Token: 0x04001EC9 RID: 7881
     public List<int> orbCollectionList = new List<int>();
 }

@@ -34,4 +34,18 @@ public class RouteFromFile : Route
         {99,"End - 100" }
     };
 
+    public override int[] SplitOn()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string[] SplitNames()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override float[] BenchmarkSplits()
+    {
+        throw new NotImplementedException();
+    }
 }
