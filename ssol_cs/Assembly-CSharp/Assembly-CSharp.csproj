@@ -60,6 +60,7 @@
     <Compile Include="RelativisticParent.cs" />
     <Compile Include="RoundedQuadMesh.cs" />
     <Compile Include="Route.cs" />
+    <Compile Include="RouteFromFile.cs" />
     <Compile Include="RouteWr20200921Long.cs" />
     <Compile Include="RouteWr20200921Short.cs" />
     <Compile Include="SenderScript.cs" />

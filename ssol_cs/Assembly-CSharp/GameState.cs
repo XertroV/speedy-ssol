@@ -231,7 +231,7 @@ public class GameState : MonoBehaviour
         }
         base.GetComponentInChildren<ColorCorrectionEffect>().enabled = !GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().saturated;
         this.arch = GameObject.FindGameObjectWithTag("Finish");
-        this.arch.SetActiveRecursively(false);
+        this.arch.SetActive(false);
         if (this.arch == null)
         {
             GameObject[] array = GameObject.FindGameObjectsWithTag("Audio");
@@ -375,7 +375,7 @@ public class GameState : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().playerTime = (float)this.totalTimePlayer;
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().worldTime = (float)this.totalTimeWorld;
                 base.GetComponent<GUIScripts>().GetTimes();
-                this.arch.SetActiveRecursively(true);
+                this.arch.SetActive(true);
                 Screen.showCursor = false;
                 Screen.lockCursor = true;
                 this.timeSet = true;
