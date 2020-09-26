@@ -254,6 +254,8 @@ public class GameState : MonoBehaviour
 		this.orbs = this.orbsList.ToArray();
 		this.orbState = new bool[this.orbs.Length];
 		this.UpdateOrbState();
+
+        this.SetRouteTo(RouteWr20200921Short);
 	}
 
 	// Token: 0x06000027 RID: 39
@@ -462,6 +464,24 @@ public class GameState : MonoBehaviour
 		}
 	}
 
+    public void SetRouteTo(Route route) {
+        this.SetRouteTo(route, true);
+    }
+
+    public void SetRouteTo(Route route, bool reset) {
+        this.route = route;
+        if (reset) {
+            this.ResetSplits();
+        }
+    }
+
+    public void ResetSplits() {
+        this.splits = new double[100];
+        this.splitOn = RouteWr20200921Long.splitOn;
+        this.splitNames = RouteWr20200921Long.splitNames;
+        this.wrSplits = RouteWr20200921Long.wrSplits;
+    }
+
 	// Token: 0x04000051 RID: 81
 	public const int splitDistance = 21000;
 
@@ -577,16 +597,18 @@ public class GameState : MonoBehaviour
 	public bool[] orbState;
 
 	// Token: 0x0400052D RID: 1325
-	public double[] splits = new double[RouteWr20200921Long.wrSplits.Length];
+	public double[] splits = new double[100];
 
 	// Token: 0x0400052E RID: 1326
-	public static int[] splitOn = RouteWr20200921Long.splitOn;
+	public int[] splitOn;
 
 	// Token: 0x040008F4 RID: 2292
-	public static string[] splitNames = RouteWr20200921Long.splitNames;
+	public string[] splitName;
 
 	// Token: 0x04001B1F RID: 6943
-	public static float[] wrSplits = RouteWr20200921Long.wrSplits;
+	public float[] wrSplits;
+
+    public Route currRoute;
 
 	// Token: 0x04001EC9 RID: 7881
 	public List<int> orbCollectionList = new List<int>();

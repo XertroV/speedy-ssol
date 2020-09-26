@@ -307,25 +307,27 @@ public class GUIScripts : MonoBehaviour
 			GUI.color = Color.white;
 			GUI.skin.box.fontSize = (int)(this.fontSizes.y * 0.5f);
 			GUI.skin.box.normal.background = this.bgTex[1];
+			float orbsDisplayWidth = 0f;
 			if (this.showOrbs)
 			{
+				orbsDisplayWidth = 400f;
 				GUI.skin.box.padding = new RectOffset(0, 0, 0, 0);
 				Vector2 boxTxtSize = GUI.skin.box.CalcSize(new GUIContent("00"));
 				GUI.skin.box.padding = new RectOffset((int)(Math.Max(0f, GUIScripts.defaultOrbBoxSize - boxTxtSize.x) / 2f), 0, (int)((GUIScripts.defaultOrbBoxSize - boxTxtSize.y) / 2f), 0);
-				GUI.BeginGroup(new Rect(10f, 100f, 400f, 400f));
+				GUI.BeginGroup(new Rect(10f, 100f, orbsDisplayWidth, 400f));
 				this.DrawRecentOrbs();
 				GUI.EndGroup();
 				GUI.skin.box.padding = new RectOffset(0, 0, 0, 0);
 				boxTxtSize = GUI.skin.box.CalcSize(new GUIContent("@"));
 				GUI.skin.box.padding = new RectOffset((int)((GUIScripts.defaultOrbBoxSize - boxTxtSize.x) / 2f), 0, (int)((GUIScripts.defaultOrbBoxSize - boxTxtSize.y) / 2f), 0);
-				GUI.BeginGroup(new Rect(10f, 510f, 400f, 400f));
+				GUI.BeginGroup(new Rect(10f, 510f, orbsDisplayWidth, 400f));
 				this.DrawOrbsTotal();
 				GUI.EndGroup();
 			}
 			GUI.EndGroup();
 			float keyOffset = this.keyDimensions + this.keyPadding;
 			GUI.skin.label.fontSize = (int)(this.fontSizes.y * 1f);
-			GUI.BeginGroup(new Rect((float)Screen.width - 3f * keyOffset, (float)Screen.height - this.barSize.y - 2f * this.keyDimensions - 2.5f * this.keyPadding, 3f * keyOffset, 2f * keyOffset));
+			GUI.BeginGroup(new Rect((this.showOrbs ? orbsDisplayWidth : 0f) + 20f, (float)Screen.height - this.barSize.y - 2f * this.keyDimensions - 2.5f * this.keyPadding, 3f * keyOffset, 2f * keyOffset));
 			float num6 = this.keyPadding / 2f;
 			GUI.Box(new Rect(0f, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
 			GUI.Box(new Rect(keyOffset, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
