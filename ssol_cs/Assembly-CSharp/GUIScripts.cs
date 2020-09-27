@@ -5,6 +5,12 @@ using UnityEngine;
 // Token: 0x02000003 RID: 3
 public class GUIScripts : MonoBehaviour
 {
+    private TextureLineGraphOfFloat frameTimeTexture;
+    private TextureLineGraphOfFloat velocityTimeTexture;
+
+    private bool showFrameTimeGraph = false;
+    private bool showVelocityGraph = true;
+
     // Token: 0x06000005 RID: 5 RVA: 0x000029E8 File Offset: 0x00000BE8
     private void Start()
     {
@@ -63,11 +69,12 @@ public class GUIScripts : MonoBehaviour
             new Texture2D(1, 1),
             new Texture2D(1, 1)
         };
-        this.bgTex[0].SetPixel(0, 0, new Color(0f, 0f, 0f, 0.4f));
+        this.bgTex[0].SetPixel(0, 0, new Color(0f, 0f, 0f, 0.25f));
         this.bgTex[0].Apply();
-        this.bgTex[1].SetPixel(0, 0, new Color(0f, 0f, 0f, 0.7f));
+        this.bgTex[1].SetPixel(0, 0, new Color(0f, 0f, 0f, 0.5f));
         this.bgTex[1].Apply();
         this.keyStyle = new GUIStyle(this.myStyle);
+        this.keyStyle.padding = new RectOffset(0, 0, 10, 0);
         this.keyStyle.alignment = TextAnchor.MiddleCenter;
         this.keyStyle.fontSize = (int)((double)this.fontSizes.y / 1.5);
         this.keyStyle.normal.background = this.blackTexture;
@@ -77,8 +84,12 @@ public class GUIScripts : MonoBehaviour
         this.splitGreen = new Color(0f, 0.8f, 0.21176471f, 1f);
         this.splitRed = new Color(0.8f, 0.07058824f, 0f, 1f);
 
-        this.route = new RouteWr20200921Short();
+        this.route = new RouteWr20200928Short();
         this.SetRouteTo(this.route);
+        this.frameTimeTexture = new TextureLineGraphOfFloat(500, 60, Color.cyan, 5, 20);
+        this.velocityTimeTexture = new TextureLineGraphOfFloat(Screen.width, 100, new Color32(255, 19, 92, 255), 3, 32);
+        this.velocityTimeTexture.AddSeries(new Color32(19, 92, 255, 255));
+        this.velocityTimeTexture.AddSeries(new Color32(19, 255, 92, 255));
     }
 
     // Token: 0x06000006 RID: 6 RVA: 0x00003088 File Offset: 0x00001288
@@ -134,6 +145,14 @@ public class GUIScripts : MonoBehaviour
         {
             this.showOrbs = !this.showOrbs;
         }
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            this.showFrameTimeGraph = !this.showFrameTimeGraph;
+        }
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            this.showVelocityGraph = !this.showVelocityGraph;
+        }
         if (Input.GetKeyDown(KeyCode.Backspace))
         {
             this.loadFadeValue = 1.2f;
@@ -146,11 +165,40 @@ public class GUIScripts : MonoBehaviour
             Application.LoadLevelAsync(3);
             GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().fadeOut = true;
         }
+        if (Input.GetKeyDown(KeyCode.F4))
+        {
+            Application.Quit();
+        }
+    }
+
+    private void UpdateFrameTimeGraph(int tick30)
+    {
+        this.frameTimeTexture.AddDataPointAt(Time.deltaTime * 1000, tick30);
+    }
+    private void UpdateVelocityGraphs(int tick30)
+    {
+        this.velocityTimeTexture.AddDataPointAt(this.state.PlayerVelocityVector.x, tick30, 2);
+        this.velocityTimeTexture.AddDataPointAt(this.state.PlayerVelocityVector.z, tick30, 1);
+        this.velocityTimeTexture.AddDataPointAt((float)this.state.playerVelocity, tick30, 0);
     }
 
     // Token: 0x06000007 RID: 7 RVA: 0x00003330 File Offset: 0x00001530
     private void OnGUI()
     {
+        var tick30 = (int)(state.TotalTimePlayer * 30);
+        //UpdateFrameTimeGraph(tick30);
+        //UpdateVelocityGraphs(tick30);
+
+        this.timeleft -= Time.deltaTime;
+        this.accum += Time.timeScale / Time.deltaTime;
+        this.frames++;
+        if ((double)this.timeleft <= 0.0)
+        {
+            this.curFPS = this.accum / (float)this.frames;
+            this.timeleft = this.updateInterval;
+            this.accum = 0f;
+            this.frames = 0;
+        }
         if (!this.state.MovementFrozen)
         {
             if (this.state.GameWin)
@@ -228,16 +276,6 @@ public class GUIScripts : MonoBehaviour
                 GUIUtility.RotateAroundPivot(num, new Vector2(this.playerArrowPos.x + this.playerArrowSize.x + this.lightArrowSize.x / 10f, this.playerArrowPos.y));
                 GUI.EndGroup();
                 this.UpdateTmpTimes();
-                this.timeleft -= Time.deltaTime;
-                this.accum += Time.timeScale / Time.deltaTime;
-                this.frames++;
-                if ((double)this.timeleft <= 0.0)
-                {
-                    this.curFPS = this.accum / (float)this.frames;
-                    this.timeleft = this.updateInterval;
-                    this.accum = 0f;
-                    this.frames = 0;
-                }
                 float num5 = this.alphaFadeValue;
                 if (this.orbFadeValue >= 0f)
                 {
@@ -245,42 +283,82 @@ public class GUIScripts : MonoBehaviour
                 }
             }
             GUI.BeginGroup(new Rect(0f, 0f, (float)Screen.width, (float)Screen.height));
-            int p = 10;
-            RectOffset padding = new RectOffset(p, p, p, 0);
+
+            if (false)
+            {
+                var labelAlignment = GUI.skin.label.alignment;
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                var experimentalDisclaimer = new GUIContent("Experimental Modded Version:\nNew RelativisticParent.cs, Start() disabled for maptile.");
+                var expDisclaimerSize = GUI.skin.label.CalcSize(experimentalDisclaimer);
+                GUI.Label(new Rect((Screen.width - expDisclaimerSize.x) / 2, 25f, expDisclaimerSize.x, expDisclaimerSize.y), experimentalDisclaimer);
+                GUI.skin.label.alignment = labelAlignment;
+            }
+
+            GUI.skin.box.padding = new RectOffset(15, 15, 15, 0);
+            GUI.skin.box.normal.background = this.bgTex[0];
+            GUI.skin.box.fontSize = (int)this.fontSizes.y * 8 / 10;
+            if (this.showTimer)
+            {
+                string timeStr = this.state.TotalTimePlayer.ToString("Time: 000.000");
+                string speedStr = this.state.playerVelocity.ToString("Speed: 00.00");
+                Vector2 vecTimerDs = GUI.skin.box.CalcSize(new GUIContent("Time: 000.000"));
+                GUI.Box(new Rect(0f, 0f, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(timeStr));
+                GUI.Box(new Rect(0f, vecTimerDs.y, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(speedStr));
+                //GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(state.PlayerVelocityVector.magnitude.ToString("VMag: 00.00")));
+                GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(this.curFPS.ToString("FPS: 000.000")));
+
+                var offsetFromSide = 60f;
+                var groupYOffset = vecTimerDs.y * 3;
+                GUI.BeginGroup(new Rect(0, groupYOffset, Screen.width, Screen.height));
+                if (this.showFrameTimeGraph)
+                {
+                    //frameTimeTexture.GUIDraw(offsetFromSide, 0);
+                    //GUI.skin.label.fontSize = (int)(fontSizes.y / 3);
+                    //GUI.skin.label.alignment = TextAnchor.MiddleRight;
+                    //var msDims = GUI.skin.label.CalcSize(new GUIContent("0 ms"));
+                    //GUI.Label(new Rect(0, 0, offsetFromSide, msDims.y), frameTimeTexture.MaxForScale.ToString("00.0") + " ms");
+                    //GUI.Label(new Rect(0, frameTimeTexture.Height - msDims.y, offsetFromSide, msDims.y), "0 ms");
+                }
+
+                if (this.showVelocityGraph)
+                {
+                    //var velocityGraphsOffset = Screen.height - this.barSize.y - velocityTimeTexture.Height - groupYOffset;
+                    //velocityTimeTexture.GUIDraw(0, velocityGraphsOffset);
+                }
+                GUI.EndGroup();
+                // DrawVelocityArrow();
+            }
+
+            GUI.skin.box = new GUIStyle(this.myStyle);
+            GUI.skin.box.normal.background = this.bgTex[1];
+            GUI.skin.label = new GUIStyle(this.myStyle);
             float fontSize = this.fontSizes.y / 1.75f;
-            GUI.skin.box.padding = padding;
+            int p = 10;
+            RectOffset scaledPadding = new RectOffset(p, p, p, 0);
+            GUI.skin.box.padding = scaledPadding;
+            GUI.skin.box.fontSize = (int)fontSize;
             Vector2 testSize = GUI.skin.box.CalcSize(new GUIContent("test"));
-            float maxY = (float)Screen.height - this.barSize.y;
-            float currY = (float)this.wrSplits.Length * testSize.y;
-            float scale;
+            float maxY = (float)Screen.height - this.barSize.y * hudMainBodyRatio;
+            float currY = (float)(this.wrSplits.Length - 1) * (testSize.y);
+            float scale = 1f;
             if (currY > maxY)
             {
                 scale = maxY / currY;
                 fontSize *= scale;
                 p = (int)((float)p * scale);
-                padding = new RectOffset(p, p, p, 0);
+                scaledPadding = new RectOffset(p, p, p, 0);
             }
-            else
-            {
-                scale = 1f;
-            }
-            GUI.skin.box.normal.background = this.bgTex[1];
-            GUI.skin.box.fontSize = (int)fontSize;
-            GUI.skin.box.font = this.myStyle.font;
-            GUI.skin.label = new GUIStyle(this.myStyle);
+            GUI.skin.label.padding = scaledPadding;
             GUI.skin.label.fontSize = (int)fontSize;
-            GUI.skin.label.padding = padding;
+            GUI.skin.box.padding = scaledPadding;
+            GUI.skin.box.fontSize = (int)fontSize;
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
             Vector2 vecSplits = GUI.skin.box.CalcSize(new GUIContent("test"));
-            Vector2 vecTimerDs = GUI.skin.label.CalcSize(new GUIContent("Time: 000.000"));
-            float col2Offset = GUI.skin.label.CalcSize(new GUIContent("-000.000")).x;
+            float col2Offset = GUI.skin.label.CalcSize(new GUIContent("-000.000")).x * 16 / 10;
             if (this.showTimer)
             {
+                // timer and splits on right
                 float timerBoxWidth = 400f * scale;
-                string timeStr = this.state.TotalTimePlayer.ToString("Time: 000.000");
-                string speedStr = this.state.playerVelocity.ToString("Speed: 00.000");
-                GUI.Box(new Rect(0f, 0f, vecTimerDs.x + 10f * scale, vecTimerDs.y), new GUIContent(timeStr));
-                GUI.Box(new Rect(0f, 0f + vecTimerDs.y, vecTimerDs.x + 10f * scale, vecTimerDs.y), new GUIContent(speedStr));
                 GUI.skin.box.alignment = TextAnchor.MiddleRight;
                 GUI.Box(new Rect((float)Screen.width - timerBoxWidth, 0f, timerBoxWidth, vecSplits.y), new GUIContent("Time"));
                 GUI.skin.box.normal.background = null;
@@ -290,7 +368,6 @@ public class GUIScripts : MonoBehaviour
                 for (int s = 0; s < this.splitOn.Length; s++)
                 {
                     GUI.skin.box.normal.background = this.bgTex[s % 2];
-
                     double tempTime = this.state.orbToSplit.ContainsKey(this.splitOn[s]) ? this.state.orbToSplit[this.splitOn[s]] : 0.0;
                     GUI.Box(new Rect((float)Screen.width - timerBoxWidth, vecSplits.y * (float)(s + 1), timerBoxWidth, vecSplits.y), new GUIContent(this.splitNames[s]));
                     if (tempTime > 0.0 || !doneOnePreview)
@@ -309,7 +386,7 @@ public class GUIScripts : MonoBehaviour
                         GUI.Label(new Rect((float)Screen.width - vecSplits.x, vecSplits.y * (float)(s + 1), vecSplits.x, vecSplits.y), splitTime);
                         Color color = GUI.color;
                         GUI.color = ((plusMinusSplitTime < 0f) ? Color.green : Color.red);
-                        GUI.Label(new Rect((float)Screen.width - vecSplits.x - col2Offset, vecSplits.y * (float)(s + 1), vecPMSplit.x, vecPMSplit.y), pmSplit);
+                        GUI.Label(new Rect((float)Screen.width - col2Offset, vecSplits.y * (float)(s + 1), vecPMSplit.x, vecPMSplit.y), pmSplit);
                         GUI.color = color;
                     }
                 }
@@ -335,21 +412,8 @@ public class GUIScripts : MonoBehaviour
                 GUI.EndGroup();
             }
             GUI.EndGroup();
-            float keyOffset = this.keyDimensions + this.keyPadding;
+            DrawKeyboard(orbsDisplayWidth);
             GUI.skin.label.fontSize = (int)(this.fontSizes.y * 1f);
-            GUI.BeginGroup(new Rect((this.showOrbs ? orbsDisplayWidth : 0f) + 20f, (float)Screen.height - this.barSize.y - 2f * this.keyDimensions - 2.5f * this.keyPadding, 3f * keyOffset, 2f * keyOffset));
-            float halfKeyPadding = this.keyPadding / 2f;
-            GUI.Box(new Rect(0f, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
-            GUI.Box(new Rect(keyOffset, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
-            GUI.Box(new Rect(keyOffset * 2f, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
-            GUI.Box(new Rect(keyOffset, 0f, keyOffset, keyOffset), this.bgTex[0]);
-            GUI.BeginGroup(new Rect(halfKeyPadding, halfKeyPadding, 3f * keyOffset - this.keyPadding, 2f * keyOffset - this.keyPadding));
-            GUI.Button(new Rect(0f, keyOffset, this.keyDimensions, this.keyDimensions), "A", Input.GetKey(KeyCode.A) ? this.pressedKeyStyle : this.keyStyle);
-            GUI.Button(new Rect(keyOffset * 1f, keyOffset, this.keyDimensions, this.keyDimensions), "S", Input.GetKey(KeyCode.S) ? this.pressedKeyStyle : this.keyStyle);
-            GUI.Button(new Rect(keyOffset * 2f, keyOffset, this.keyDimensions, this.keyDimensions), "D", Input.GetKey(KeyCode.D) ? this.pressedKeyStyle : this.keyStyle);
-            GUI.Button(new Rect(keyOffset, 0f, this.keyDimensions, this.keyDimensions), "W", Input.GetKey(KeyCode.W) ? this.pressedKeyStyle : this.keyStyle);
-            GUI.EndGroup();
-            GUI.EndGroup();
         }
         else
         {
@@ -476,7 +540,7 @@ public class GUIScripts : MonoBehaviour
             ":",
             this.minutes.x.ToString("00"),
             ":",
-            this.seconds.x.ToString("00")
+            this.seconds.x.ToString("00.000")
         });
         this.times[1] = string.Concat(new string[]
         {
@@ -484,7 +548,7 @@ public class GUIScripts : MonoBehaviour
             ":",
             this.minutes.y.ToString("00"),
             ":",
-            this.seconds.y.ToString("00")
+            this.seconds.y.ToString("00.000")
         });
     }
 
@@ -563,6 +627,91 @@ public class GUIScripts : MonoBehaviour
         this.wrSplits = this.route.BenchmarkSplits();
     }
 
+    public void DrawKeyboard(float horizontalOffset)
+    {
+        float keyOffset = this.keyDimensions + this.keyPadding;
+        GUI.BeginGroup(new Rect((horizontalOffset) + 20f, (float)Screen.height - this.barSize.y * hudMainBodyRatio - 2f * keyOffset - 20f, 3f * keyOffset, 2f * keyOffset));
+        float halfKeyPadding = this.keyPadding / 2f;
+        GUI.Box(new Rect(0f, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
+        GUI.Box(new Rect(keyOffset, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
+        GUI.Box(new Rect(keyOffset * 2f, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
+        GUI.Box(new Rect(keyOffset, 0f, keyOffset, keyOffset), this.bgTex[0]);
+        GUI.BeginGroup(new Rect(halfKeyPadding, halfKeyPadding, 3f * keyOffset - this.keyPadding, 2f * keyOffset - this.keyPadding));
+        GUI.skin.button.alignment = TextAnchor.MiddleCenter;
+
+        DrawKey("W", KeyCode.W, 1, 0);
+        DrawKey("A", KeyCode.A, 0, 1);
+        DrawKey("S", KeyCode.S, 1, 1);
+        DrawKey("D", KeyCode.D, 2, 1);
+
+        GUI.EndGroup();
+        GUI.EndGroup();
+    }
+
+    public void DrawKey(string letter, KeyCode k, float x, float y)
+    {
+        float keyOffset = this.keyDimensions + this.keyPadding;
+        GUI.Button(new Rect(x * keyOffset, y * keyOffset, this.keyDimensions, this.keyDimensions), letter, Input.GetKey(k) ? this.pressedKeyStyle : this.keyStyle);
+    }
+
+    private void OnDrawGizmos()
+    {
+        DrawVelocityArrow();
+    }
+
+    public void DrawVelocityArrow()
+    {
+        var v = state.PlayerVelocityVector;
+        int texSide = 64;
+        var tex = new Texture2D(texSide, texSide);
+        tex.filterMode = FilterMode.Point;
+        var step = 0.25f;
+        var length = v.magnitude;
+        var incrPos = new Vector2(v.x, v.z) / length / step;
+        var i = 0f;
+        Vector2 pos = Vector2.zero;
+        Color c = new Color(1f, 19f / 255f, 92f / 255f, 0.8f);
+        while (i <= length)
+        {
+            tex.SetPixel(texSide / 2 + (int)pos.x, texSide / 2 + (int)pos.y, c);
+            pos += incrPos;
+            i += step;
+        }
+        tex.Apply();
+
+        GUI.DrawTexture(new Rect(Screen.width / 2 - texSide / 2, Screen.height / 2 - texSide / 2, texSide, texSide), tex);
+
+        //var cam = Camera.current;
+        //float distFromCamera = cam.nearClipPlane * 1.1f;
+        //DrawLine(cam.ScreenToWorldPoint(new Vector3(vXPos, Screen.height - vYPos, distFromCamera)), cam.ScreenToWorldPoint(new Vector3(v.x, Screen.height - v.z, distFromCamera)), Color.cyan);
+        //DrawLine(cam.ScreenToWorldPoint(new Vector3(vXPos, Screen.height - vYPos, distFromCamera)), cam.ScreenToWorldPoint(new Vector3(vXPos + v.x, Screen.height - vYPos - v.z, distFromCamera)), Color.yellow);
+        //Debug.Log("Screen to world point: " + cam.ScreenToWorldPoint(new Vector3(vXPos, vYPos, distFromCamera)).ToString());
+        //Debug.Log("Screen to World to Screen point: " + cam.WorldToScreenPoint(cam.ScreenToWorldPoint(new Vector3(vXPos, vYPos, distFromCamera))));
+        //Debug.Log("Screen to World to Viewport point: " + cam.WorldToViewportPoint(cam.ScreenToWorldPoint(new Vector3(vXPos, vYPos, distFromCamera))));
+        //Debug.Log("distFromCamera: " + distFromCamera);
+        //Debug.Log("state.PlayerVelocityVector: " + state.PlayerVelocityVector);
+        //Debug.Log("camera position forward: " + cam.transform.position + cam.transform.TransformDirection(cam.transform.forward));
+
+    }
+
+    void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 1f / 45f)
+    {
+        GameObject myLine = new GameObject();
+        myLine.transform.position = start;
+        myLine.AddComponent<LineRenderer>();
+        LineRenderer lr = myLine.GetComponent<LineRenderer>();
+        lr.material = new Material(Shader.Find("Particles/Alpha Blended Premultiply"));
+        lr.SetColors(color, color);
+        lr.SetWidth(0.001f, 0.001f);
+        lr.SetPosition(0, start);
+        lr.SetPosition(1, end);
+        GameObject.Destroy(myLine, duration);
+    }
+
+    private List<GameObject> lines;
+
+    private const float vXPos = 100f;
+    private const float vYPos = 100f;
 
     // Token: 0x04000001 RID: 1
     private AsyncOperation loadOp;
@@ -578,6 +727,8 @@ public class GUIScripts : MonoBehaviour
 
     // Token: 0x04000005 RID: 5
     public Texture2D hudEmpty;
+
+    public const float hudMainBodyRatio = 306f / 346f;
 
     // Token: 0x04000006 RID: 6
     public Texture2D lightArrow;
@@ -613,7 +764,7 @@ public class GUIScripts : MonoBehaviour
     public int regularOrbs;
 
     // Token: 0x04000011 RID: 17
-    public float updateInterval = 0.5f;
+    public float updateInterval = 0.05f;
 
     // Token: 0x04000012 RID: 18
     private float accum;

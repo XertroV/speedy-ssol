@@ -1,8 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 
 public class RelativisticParent : MonoBehaviour
 {
@@ -34,170 +31,179 @@ public class RelativisticParent : MonoBehaviour
             viw = viw.normalized * (float)(state.MaxSpeed - .01f);
         }
     }
+
+
+    void Awake()
+    {
+        //Get the player's GameState, use it later for general information
+        state = GameObject.FindGameObjectWithTag(Tags.player).GetComponent<GameState>();
+    }
+
+
     // Use this for initialization
     void Start()
     {
-        if (base.name == "maptile")
+        //DateTime now = DateTime.Now;
+        if (base.name != "maptile")
         {
-            return;
-        }
-        if (GetComponent<ObjectMeshDensity>())
-        {
-            GetComponent<ObjectMeshDensity>().enabled = false;
-        }
-        int vertCount = 0, triangleCount = 0;
-        checkSpeed();
-        Matrix4x4 worldLocalMatrix = transform.worldToLocalMatrix;
-
-        //This code combines the meshes of children of parent objects
-        //This increases our FPS by a ton
-        //Get an array of the meshfilters
-        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
-        //Count submeshes
-        int[] subMeshCount = new int[meshFilters.Length];
-        //Get all the meshrenderers
-        MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
-        //Length of our original array
-        int meshFilterLength = meshFilters.Length;
-        //And a counter
-        int subMeshCounts = 0;
-
-        //For every meshfilter,
-        for (int y = 0; y < meshFilterLength; y++)
-        {
-            //If it's null, ignore it.
-            if (meshFilters[y] == null) continue;
-            if (meshFilters[y].sharedMesh == null) continue;
-            //else add its vertices to the vertcount
-            vertCount += meshFilters[y].sharedMesh.vertices.Length;
-            //Add its triangles to the count
-            triangleCount += meshFilters[y].sharedMesh.triangles.Length;
-            //Add the number of submeshes to its spot in the array
-            subMeshCount[y] = meshFilters[y].mesh.subMeshCount;
-            //And add up the total number of submeshes
-            subMeshCounts += meshFilters[y].mesh.subMeshCount;
-        }
-        // Get a temporary array of EVERY vertex
-        Vector3[] tempVerts = new Vector3[vertCount];
-        //And make a triangle array for every submesh
-        int[][] tempTriangles = new int[subMeshCounts][];
-
-        for (int u = 0; u < subMeshCounts; u++)
-        {
-            //Make every array the correct length of triangles
-            tempTriangles[u] = new int[triangleCount];
-        }
-        //Also grab our UV texture coordinates
-        Vector2[] tempUVs = new Vector2[vertCount];
-        //And store a number of materials equal to the number of submeshes.
-        Material[] tempMaterials = new Material[subMeshCounts];
-
-        int vertIndex = 0;
-        Mesh MFs;
-        int subMeshIndex = 0;
-        //For all meshfilters
-        for (int i = 0; i < meshFilterLength; i++)
-        {
-            //just doublecheck that the mesh isn't null
-            MFs = meshFilters[i].sharedMesh;
-            if (MFs == null) continue;
-
-            //Otherwise, for all submeshes in the current mesh
-            for (int q = 0; q < subMeshCount[i]; q++)
+            if (GetComponent<ObjectMeshDensity>())
             {
-                //grab its material
-                tempMaterials[subMeshIndex] = meshRenderers[i].materials[q];
-                //Grab its triangles
-                int[] tempSubTriangles = MFs.GetTriangles(q);
-                //And put them into the submesh's triangle array
-                for (int k = 0; k < tempSubTriangles.Length; k++)
+                GetComponent<ObjectMeshDensity>().enabled = false;
+            }
+            int vertCount = 0, triangleCount = 0;
+            checkSpeed();
+            Matrix4x4 worldLocalMatrix = transform.worldToLocalMatrix;
+
+            //This code combines the meshes of children of parent objects
+            //This increases our FPS by a ton
+            //Get an array of the meshfilters
+            MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
+            //Count submeshes
+            int[] subMeshCount = new int[meshFilters.Length];
+            //Get all the meshrenderers
+            MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
+            //Length of our original array
+            int meshFilterLength = meshFilters.Length;
+            //And a counter
+            int subMeshCounts = 0;
+
+            //For every meshfilter,
+            for (int y = 0; y < meshFilterLength; y++)
+            {
+                //If it's null, ignore it.
+                if (meshFilters[y] == null) continue;
+                if (meshFilters[y].sharedMesh == null) continue;
+                //else add its vertices to the vertcount
+                vertCount += meshFilters[y].sharedMesh.vertices.Length;
+                //Add its triangles to the count
+                triangleCount += meshFilters[y].sharedMesh.triangles.Length;
+                //Add the number of submeshes to its spot in the array
+                subMeshCount[y] = meshFilters[y].mesh.subMeshCount;
+                //And add up the total number of submeshes
+                subMeshCounts += meshFilters[y].mesh.subMeshCount;
+            }
+            // Get a temporary array of EVERY vertex
+            Vector3[] tempVerts = new Vector3[vertCount];
+            //And make a triangle array for every submesh
+            int[][] tempTriangles = new int[subMeshCounts][];
+
+            for (int u = 0; u < subMeshCounts; u++)
+            {
+                //Make every array the correct length of triangles
+                tempTriangles[u] = new int[triangleCount];
+            }
+            //Also grab our UV texture coordinates
+            Vector2[] tempUVs = new Vector2[vertCount];
+            //And store a number of materials equal to the number of submeshes.
+            Material[] tempMaterials = new Material[subMeshCounts];
+
+            int vertIndex = 0;
+            Mesh MFs;
+            int subMeshIndex = 0;
+            //For all meshfilters
+            for (int i = 0; i < meshFilterLength; i++)
+            {
+                //just doublecheck that the mesh isn't null
+                MFs = meshFilters[i].sharedMesh;
+                if (MFs == null) continue;
+
+                //Otherwise, for all submeshes in the current mesh
+                for (int q = 0; q < subMeshCount[i]; q++)
                 {
-                    tempTriangles[subMeshIndex][k] = tempSubTriangles[k] + vertIndex;
+                    //grab its material
+                    tempMaterials[subMeshIndex] = meshRenderers[i].materials[q];
+                    //Grab its triangles
+                    int[] tempSubTriangles = MFs.GetTriangles(q);
+                    //And put them into the submesh's triangle array
+                    for (int k = 0; k < tempSubTriangles.Length; k++)
+                    {
+                        tempTriangles[subMeshIndex][k] = tempSubTriangles[k] + vertIndex;
+                    }
+                    //Increment the submesh index
+                    subMeshIndex++;
                 }
-                //Increment the submesh index
-                subMeshIndex++;
+                Matrix4x4 cTrans = worldLocalMatrix * meshFilters[i].transform.localToWorldMatrix;
+                //For all the vertices in the mesh
+                for (int v = 0; v < MFs.vertices.Length; v++)
+                {
+                    //Get the vertex and the UV coordinate
+                    tempVerts[vertIndex] = cTrans.MultiplyPoint3x4(MFs.vertices[v]);
+                    tempUVs[vertIndex] = MFs.uv[v];
+                    vertIndex++;
+                }
+                //And delete that gameobject.
+                meshFilters[i].gameObject.SetActive(false);
             }
-            Matrix4x4 cTrans = worldLocalMatrix * meshFilters[i].transform.localToWorldMatrix;
-            //For all the vertices in the mesh
-            for (int v = 0; v < MFs.vertices.Length; v++)
+            //Put it all together now.
+            Mesh myMesh = new Mesh();
+            //Make the mesh have as many submeshes as you need
+            myMesh.subMeshCount = subMeshCounts;
+            //Set its vertices to tempverts
+            myMesh.vertices = tempVerts;
+            //start at the first submesh
+            subMeshIndex = 0;
+            //For every submesh in each meshfilter
+            for (int l = 0; l < meshFilterLength; l++)
             {
-                //Get the vertex and the UV coordinate
-                tempVerts[vertIndex] = cTrans.MultiplyPoint3x4(MFs.vertices[v]);
-                tempUVs[vertIndex] = MFs.uv[v];
-                vertIndex++;
+                for (int g = 0; g < subMeshCount[l]; g++)
+                {
+                    //Set a new submesh, using the triangle array and its submesh index (built in unity function)
+                    myMesh.SetTriangles(tempTriangles[subMeshIndex], subMeshIndex);
+                    //increment the submesh index
+                    subMeshIndex++;
+                }
             }
-            //And delete that gameobject.
-            meshFilters[i].gameObject.SetActive(false);
-        }
-        //Put it all together now.
-        Mesh myMesh = new Mesh();
-        //Make the mesh have as many submeshes as you need
-        myMesh.subMeshCount = subMeshCounts;
-        //Set its vertices to tempverts
-        myMesh.vertices = tempVerts;
-        //start at the first submesh
-        subMeshIndex = 0;
-        //For every submesh in each meshfilter
-        for (int l = 0; l < meshFilterLength; l++)
-        {
-            for (int g = 0; g < subMeshCount[l]; g++)
+            //Just shunt in the UV coordinates, we don't need to change them
+            myMesh.uv = tempUVs;
+            //THEN totally replace our object's mesh with this new, combined mesh
+            GetComponent<MeshFilter>().mesh = myMesh;
+            GetComponent<MeshRenderer>().enabled = true;
+            GetComponent<MeshFilter>().mesh.RecalculateNormals();
+            GetComponent<MeshFilter>().GetComponent<Renderer>().materials = tempMaterials;
+
+            transform.gameObject.SetActive(true);
+            //End section of combining meshes
+
+            state = GameObject.FindGameObjectWithTag(Tags.player).GetComponent<GameState>();
+
+            meshFilter = GetComponent<MeshFilter>();
+
+            MeshRenderer tempRenderer = GetComponent<MeshRenderer>();
+
+
+
+            //Then the standard RelativisticObject startup
+            if (tempRenderer.materials[0].mainTexture != null)
             {
-                //Set a new submesh, using the triangle array and its submesh index (built in unity function)
-                myMesh.SetTriangles(tempTriangles[subMeshIndex], subMeshIndex);
-                //increment the submesh index
-                subMeshIndex++;
+                //So that we can set unique values to every moving object, we have to instantiate a material
+                //It's the same as our old one, but now it's not connected to every other object with the same material
+                Material quickSwapMaterial = Instantiate((tempRenderer as Renderer).materials[0]) as Material;
+                //Then, set the value that we want
+                quickSwapMaterial.SetFloat("_viw", 0);
+
+                //And stick it back into our renderer. We'll do the SetVector thing every frame.
+                tempRenderer.materials[0] = quickSwapMaterial;
+
+                //set our start time and start position in the shader.
+                tempRenderer.materials[0].SetFloat("_strtTime", (float)startTime);
+                tempRenderer.materials[0].SetVector("_strtPos", new Vector4(transform.position.x, transform.position.y, transform.position.z, 0));
             }
-        }
-        //Just shunt in the UV coordinates, we don't need to change them
-        myMesh.uv = tempUVs;
-        //THEN totally replace our object's mesh with this new, combined mesh
-        GetComponent<MeshFilter>().mesh = myMesh;
-        GetComponent<MeshRenderer>().enabled = true;
-        GetComponent<MeshFilter>().mesh.RecalculateNormals();
-        GetComponent<MeshFilter>().GetComponent<Renderer>().materials = tempMaterials;
 
-        transform.gameObject.SetActive(true);
-        //End section of combining meshes
+            //This code is a hack to ensure that frustrum culling does not take place
+            //It changes the render bounds so that everything is contained within them
+            Transform camTransform = Camera.main.transform;
+            float distToCenter = (Camera.main.farClipPlane - Camera.main.nearClipPlane) / 2.0f;
+            Vector3 center = camTransform.position + camTransform.forward * distToCenter;
+            float extremeBound = 500000.0f;
+            meshFilter.sharedMesh.bounds = new Bounds(center, Vector3.one * extremeBound);
 
+            if (GetComponent<ObjectMeshDensity>())
+            {
+                GetComponent<ObjectMeshDensity>().enabled = true;
+            }
 
-
-        state = GameObject.FindGameObjectWithTag(Tags.player).GetComponent<GameState>();
-
-        meshFilter = GetComponent<MeshFilter>();
-
-        MeshRenderer tempRenderer = GetComponent<MeshRenderer>();
-
-
-
-        //Then the standard RelativisticObject startup
-        if (tempRenderer.materials[0].mainTexture != null)
-        {
-            //So that we can set unique values to every moving object, we have to instantiate a material
-            //It's the same as our old one, but now it's not connected to every other object with the same material
-            Material quickSwapMaterial = Instantiate((tempRenderer as Renderer).materials[0]) as Material;
-            //Then, set the value that we want
-            quickSwapMaterial.SetFloat("_viw", 0);
-
-            //And stick it back into our renderer. We'll do the SetVector thing every frame.
-            tempRenderer.materials[0] = quickSwapMaterial;
-
-            //set our start time and start position in the shader.
-            tempRenderer.materials[0].SetFloat("_strtTime", (float)startTime);
-            tempRenderer.materials[0].SetVector("_strtPos", new Vector4(transform.position.x, transform.position.y, transform.position.z, 0));
-        }
-
-        //This code is a hack to ensure that frustrum culling does not take place
-        //It changes the render bounds so that everything is contained within them
-        Transform camTransform = Camera.main.transform;
-        float distToCenter = (Camera.main.farClipPlane - Camera.main.nearClipPlane) / 2.0f;
-        Vector3 center = camTransform.position + camTransform.forward * distToCenter;
-        float extremeBound = 500000.0f;
-        meshFilter.sharedMesh.bounds = new Bounds(center, Vector3.one * extremeBound);
-
-
-        if (GetComponent<ObjectMeshDensity>())
-        {
-            GetComponent<ObjectMeshDensity>().enabled = true;
+            //var diff = DateTime.Now.Subtract(now);
+            //Debug.Log("RelativisticParent.Start for " + base.name + "; duration (ms): " + diff.TotalMilliseconds);
         }
     }
 
