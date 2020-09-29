@@ -11,6 +11,10 @@ public class GUIScripts : MonoBehaviour
     private bool showFrameTimeGraph = false;
     private bool showVelocityGraph = true;
 
+    private Vector2 scaleStatic;
+    // fix for some resolutions
+    private Vector2 fix16by10;
+
     private MenuScripts menuScripts;
     private MenuComponentSelectSplits selectSplits;
 
@@ -120,6 +124,9 @@ public class GUIScripts : MonoBehaviour
 
         selectSplits.AddCallback(SetRouteTo);
         selectSplits.splitsStyle.font = myStyle.font;
+
+        scaleStatic = new Vector2(Screen.width / 2560, Screen.height / 1440);
+        fix16by10 = Math.Abs(Screen.width / Screen.height - 1.6f) < 0.04 ? new Vector2(-80 * scale.x, -80 * scale.y) : Vector2.zero;
     }
 
     // Token: 0x06000006 RID: 6 RVA: 0x00003088 File Offset: 0x00001288
@@ -208,7 +215,7 @@ public class GUIScripts : MonoBehaviour
         {
             selectSplits.UpdateRouteUI(+1);
         }
-        if (Input.GetKeyDown(KeyCode.Question) || Input.GetKeyDown(KeyCode.Quote) || Input.GetKeyDown(KeyCode.DoubleQuote))
+        /*if (Input.GetKeyDown(KeyCode.Question) || Input.GetKeyDown(KeyCode.Quote) || Input.GetKeyDown(KeyCode.DoubleQuote))
         {
             for (int i = 0; i < 100 - this.regularOrbs; i++)
             {
@@ -216,7 +223,7 @@ public class GUIScripts : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Player").GetComponent<GUIScripts>().OrbCollision();
                 GameObject.FindGameObjectWithTag("Player").GetComponent<GameState>().OrbPicked();
             }
-        }
+        }*/
     }
 
     private void UpdateFrameTimeGraph(int tick30)
@@ -230,7 +237,7 @@ public class GUIScripts : MonoBehaviour
         this.velocityTimeTexture.AddDataPointAt((float)this.state.playerVelocity, tick30, 0);
     }
 
-    private const float speedyTexWidth = 400f;
+    private const float speedyTexWidth = 500f;
 
     // Token: 0x06000007 RID: 7 RVA: 0x00003330 File Offset: 0x00001530
     private void OnGUI()
@@ -273,7 +280,7 @@ public class GUIScripts : MonoBehaviour
                 }
                 GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.alphaFadeValue);
             }
-            else
+            if (!this.state.GameWin || true)
             {
                 if (this.loading)
                 {
@@ -325,7 +332,7 @@ public class GUIScripts : MonoBehaviour
                     (float)Math.Pow(Math.Cos((this.state.PlayerVelocity / this.state.SpeedOfLight) * Math.PI / 2), 2),
                     (float)Math.Pow(Math.Cos((this.state.PlayerVelocity / this.state.SpeedOfLight) * Math.PI / 2), 2),
                     1f);
-                GUI.skin.label.fontSize = (int)(this.fontSizes.y * this.scale.y * 0.7);
+                GUI.skin.label.fontSize = (int)(this.fontSizes.y * this.scale.y * 0.8);
                 GUI.skin.label.alignment = TextAnchor.MiddleRight;
                 var curSpeed = new GUIContent(this.state.PlayerVelocity.ToString("F2"));
                 var maxSpeed = new GUIContent(this.state.SpeedOfLight.ToString("F2"));
@@ -340,8 +347,8 @@ public class GUIScripts : MonoBehaviour
                     (float)(this.lightArrow.height * Math.Sin(theta) * this.scale.x),
                     (float)(this.lightArrow.height * Math.Cos(theta) * this.scale.y));
                 Vector2 maxSOff2 = new Vector2(
-                    (float)(this.lightArrow.width * Math.Cos(-theta) * this.scale.x),
-                    (float)(this.lightArrow.width * Math.Sin(-theta) * this.scale.y));
+                    (float)(this.lightArrow.width * Math.Cos(-theta) * this.scale.x * 0.5),
+                    (float)(this.lightArrow.width * Math.Sin(-theta) * this.scale.y * 1.07));
                 Vector2 maxSOffs = maxSOff1 - maxSOff2;
 
                 // speed of player
@@ -361,7 +368,7 @@ public class GUIScripts : MonoBehaviour
                 GUIUtility.RotateAroundPivot(-maxSpeedOverCX75, new Vector2(laPos.x, this.playerArrowPos.y));
                 GUI.DrawTexture(new Rect(this.lightArrowPos.x, this.lightArrowPos.y, this.lightArrowSize.x, this.lightArrowSize.y), this.lightArrow);
                 GUIUtility.RotateAroundPivot(maxSpeedOverCX75, new Vector2(laPos.x, laPos.y));
-                GUIHelpers.DrawOutline(new Rect(lightArrowOrigin.x - maxSSize.x * 0.8f - maxSOffs.x, lightArrowOrigin.y - maxSSize.y * 0.3f - maxSOffs.y, maxSSize.x, maxSSize.y), maxSpeed, GUI.skin.label, Color.black, strokeWidth: 1f);
+                GUIHelpers.DrawOutline(new Rect(lightArrowOrigin.x - maxSSize.x * 0.75f - maxSOffs.x + fix16by10.x, lightArrowOrigin.y - maxSSize.y * 0.75f - maxSOffs.y + fix16by10.x, maxSSize.x, maxSSize.y), maxSpeed, GUI.skin.label, Color.black, strokeWidth: 1f);
                 GUIUtility.RotateAroundPivot(-maxSpeedOverCX75, new Vector2(laPos.x, laPos.y));
                 GUIUtility.RotateAroundPivot(maxSpeedOverCX75, new Vector2(laPos.x, laPos.y));
 
@@ -403,9 +410,10 @@ public class GUIScripts : MonoBehaviour
                 string timeStr = this.state.TotalTimePlayer.ToString("Time: 000.000");
                 string speedStr = this.state.playerVelocity.ToString("Speed: 00.00");
                 Vector2 vecTimerDs = GUI.skin.box.CalcSize(new GUIContent("Time: 000.000"));
+                var maxSpeed = state.MaxSpeed * state.PctOfSpdUsing;
                 GUI.Box(new Rect(0f, 0f, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(timeStr));
                 GUI.Box(new Rect(0f, vecTimerDs.y, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(speedStr));
-                GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(state.MaxSpeed.ToString("MaxSpd: 00.00")));
+                GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(maxSpeed.ToString("MaxSpd: 00.00")));
                 //GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(this.curFPS.ToString("FPS: 000.000")));
 
                 var offsetFromSide = 60f;
@@ -441,12 +449,12 @@ public class GUIScripts : MonoBehaviour
             Vector2 testSize = GUI.skin.box.CalcSize(new GUIContent("test"));
             float maxY = (float)Screen.height - this.barSize.y * hudMainBodyRatio;
             float currY = (float)(this.wrSplits.Length - 1) * (testSize.y);
-            float scale = 1f;
+            float localScale = 1f;
             if (currY > maxY)
             {
-                scale = maxY / currY;
-                fontSize *= scale;
-                p = (int)((float)p * scale);
+                localScale = maxY / currY;
+                fontSize *= localScale;
+                p = (int)((float)p * localScale);
                 scaledPadding = new RectOffset(p, p, p, 0);
             }
             GUI.skin.label.padding = scaledPadding;
@@ -459,16 +467,17 @@ public class GUIScripts : MonoBehaviour
             if (this.showTimer)
             {
                 // timer and splits on right
-                float timerBoxWidth = 400f * scale;
-                GUI.skin.box.fontSize = (int)(fontSize * 0.6666667);
+                float timerBoxWidth = 400f * localScale;
+                GUI.skin.box.fontSize = (int)(fontSize * 0.8);
                 GUI.skin.box.alignment = TextAnchor.MiddleRight;
                 GUI.Box(new Rect((float)Screen.width - timerBoxWidth, 0f, timerBoxWidth, vecSplits.y), new GUIContent("Time"));
                 GUI.skin.box.normal.background = null;
                 GUI.Box(new Rect((float)Screen.width - col2Offset + vecSplits.x, 0f, vecSplits.x, vecSplits.y), new GUIContent("+/-"));
                 GUI.skin.box.alignment = TextAnchor.MiddleLeft;
                 var name = this.selectSplits.SelectedRoute.Name();
-                var maxNameLen = 23;
-                GUI.Box(new Rect((float)Screen.width - timerBoxWidth, 0f, timerBoxWidth, vecSplits.y), new GUIContent(name.Substring(0, maxNameLen) + (name.Length > maxNameLen ? "..." : "")));
+                var nameSize = GUI.skin.box.CalcSize(new GUIContent(name));
+                var maxNameLen = 30;
+                GUI.Box(new Rect((float)Screen.width - timerBoxWidth, 0f, timerBoxWidth, vecSplits.y), new GUIContent(name.Length > maxNameLen ? name.Substring(0, maxNameLen) + "..." : name));
                 GUI.skin.box.fontSize = (int)fontSize;
                 bool doneOnePreview = false;
                 for (int s = 0; s < this.splitOn.Length; s++)
@@ -578,8 +587,13 @@ public class GUIScripts : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().saturated = this.saturated;
             }
             this.selectSplits.DrawSelectSplitsFromMiddleCenter(Screen.width / 2, Screen.height * 0.1f);
-
             GUIHelpers.DrawSpeedyTex(new Rect(50f * scale.x, 50f * scale.y, speedyTexWidth * scale.x, speedyTexWidth / 2 * scale.y), GUIHelpers.EaseOutElastic, scaleCloserToOne: 0.4f);
+
+            var controlsWidth = 700f * scale.x;
+            GUI.BeginGroup(new Rect(50f * scale.x, speedyTexWidth / 2 * scale.y + 100 * scale.y, controlsWidth, Screen.height));
+            GUI.skin.label.fontSize = (int)(30 * scale.y);
+            GUIHelpers.DrawControlsInfo(controlsWidth);
+            GUI.EndGroup();
         }
         if (this.unset && this.frames > 5)
         {
@@ -985,7 +999,7 @@ public class GUIScripts : MonoBehaviour
     public float volume = 1f;
 
     // Token: 0x0400003E RID: 62
-    public float mouseSensitivity = 0.5f;
+    public float mouseSensitivity = 0.9f;
 
     // Token: 0x0400003F RID: 63
     private bool volumeMove;

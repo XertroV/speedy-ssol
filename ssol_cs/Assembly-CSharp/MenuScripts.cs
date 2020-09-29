@@ -51,7 +51,7 @@ public class MenuScripts : MonoBehaviour
     private MyUnitySingleton singleton;
     private MenuComponentSelectSplits selectSplits;
     public float volume;
-    public float mouseSensitivity;
+    public float mouseSensitivity = 0.9f;
     private bool volumeMove;
     private bool mouseMove;
     private bool saturated = true;
@@ -60,7 +60,8 @@ public class MenuScripts : MonoBehaviour
     private bool fadeOut;
     private bool fadeIn = true;
 
-    private bool skipMenuOnFirstLoad = true;
+    private const float speedyTexWidth = 500f;
+    private bool skipMenuOnFirstLoad = false;
     private const bool skipIntroSlides = true;
 
     // Token: 0x0600003B RID: 59 RVA: 0x00006090 File Offset: 0x00004290
@@ -206,7 +207,9 @@ public class MenuScripts : MonoBehaviour
                 GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.startFadeValue);
             }
             GUI.DrawTexture(new Rect(this.difference.x, this.difference.y, this.size.x, this.size.y), this.menuTexture);
+            GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
             GUIHelpers.DrawSpeedyTex(new Rect(1400 * scale.x, 25 * scale.y, 800 * scale.x, 400 * scale.y), GUIHelpers.EaseInOutBounce, scaleCloserToOne: 0.6f);
+            GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.startFadeValue);
             GUI.EndGroup();
             GUI.depth = 1;
             GUI.BeginGroup(new Rect(this.difference.x, this.difference.y, this.size.x, this.size.y));
@@ -255,8 +258,13 @@ public class MenuScripts : MonoBehaviour
             {
                 GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.alphaFadeValue);
             }
+            GUI.BeginGroup(new Rect(50f * scale.x, 50 * scale.y, 800f * scale.x, Screen.height));
+            GUI.skin.label.fontSize = (int)(30 * scale.y);
+            GUIHelpers.DrawControlsInfo(800f * scale.x);
+            GUI.EndGroup();
             GUI.skin.label.fontSize = 50;
             //GUI.Label(new Rect(50, 50, Screen.width, Screen.height), new GUIContent("TEST LABEL -- this.options == false"));
+
         }
         else
         {
@@ -309,8 +317,11 @@ public class MenuScripts : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().saturated = this.saturated;
             }
             GUI.skin.label.fontSize = 50;
+            GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
             //GUI.Label(new Rect(50, 50, Screen.width, Screen.height), new GUIContent("TEST LABEL -- this.options == true"));
             this.selectSplits.DrawSelectSplitsFromMiddleCenter(Screen.width / 2, Screen.height * 0.1f);
+            GUIHelpers.DrawSpeedyTex(new Rect(50f * scale.x, 50f * scale.y, speedyTexWidth * scale.x, speedyTexWidth / 2 * scale.y), GUIHelpers.EaseOutBounce, scaleCloserToOne: 0.4f);
+            GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.startFadeValue);
         }
         if (this.credits && this.mouseDown)
         {

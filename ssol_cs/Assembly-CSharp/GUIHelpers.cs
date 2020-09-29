@@ -7,10 +7,26 @@ public class GUIHelpers
 {
     private static Texture2D speedyTex = LoadTextureFromPng(@"a-speedy-ssol_Data\Speedrun\speedy.png");
 
+    private static string controls = string.Join("\n", new string[] {
+        "## In-Game Controlls ##",
+        "[ and ] -- Change splits in-game",
+        "(backspace) -- Start over, reset timers",
+        "T -- Toggle timers showing",
+        "O -- Toggle orbs showing",
+        "",
+        "Add custom splits to the 'splits' folder (copy an existing one as a template). You need to make sure the orb numbers are correct and the file is correctly formatted."
+    });
+
     public static Vector2 SpeedyTexDimensions { get => new Vector2(speedyTex.width, speedyTex.height); }
 
-    public static void DrawControlsInfo()
+    public static void DrawControlsInfo(float width)
     {
+        var origStyle = new GUIStyle(GUI.skin.label);
+        GUI.skin.label.wordWrap = true;
+        GUI.skin.label.richText = true;
+        DrawOutline(new Rect(0, 0, width, Screen.height), new GUIContent(controls), GUI.skin.label, Color.black);
+        //GUI.Label(new Rect(0, 0, width, Screen.height), controls);
+        GUI.skin.label = origStyle;
     }
 
     public static Texture2D LoadTextureFromPng(string filepath)

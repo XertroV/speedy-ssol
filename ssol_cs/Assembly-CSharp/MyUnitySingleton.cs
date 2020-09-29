@@ -91,7 +91,7 @@ public class MyUnitySingleton : MonoBehaviour
     public float worldTime;
 
     // Token: 0x0400010C RID: 268
-    public float mouseSensitivity = 0.8f;
+    public float mouseSensitivity = 0.9f;
 
     // Token: 0x0400010D RID: 269
     public float volume = 0.5f;
