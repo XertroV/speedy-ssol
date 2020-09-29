@@ -589,4 +589,5 @@ public class GameState : MonoBehaviour
     public Dictionary<int, double> orbToSplit = new Dictionary<int, double>();
 
     public List<int> orbCollectionList = new List<int>();
+    public MenuComponentSelectSplits selectSplits;
 }

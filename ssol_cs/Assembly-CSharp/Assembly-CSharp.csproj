@@ -10,6 +10,7 @@
     <AssemblyName>Assembly-CSharp</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -20,17 +21,25 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\SSOL_PATCHED\A Slower Speed of Light_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
@@ -44,9 +53,11 @@
     <Compile Include="ColorCorrectionEffect.cs" />
     <Compile Include="EndingScript.cs" />
     <Compile Include="GameState.cs" />
+    <Compile Include="GUIHelpers.cs" />
     <Compile Include="GUIScripts.cs" />
     <Compile Include="ImageEffectBase.cs" />
     <Compile Include="InstructionScripts.cs" />
+    <Compile Include="MenuComponentSelectSplits.cs" />
     <Compile Include="MenuScripts.cs" />
     <Compile Include="MovementScripts.cs" />
     <Compile Include="MyUnitySingleton.cs" />
@@ -72,4 +83,7 @@
     <Compile Include="WinMovementScripts.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "$(SolutionDir)\..\..\SSOL_PATCHED\a-speedy-ssol_Data\Managed\$(ProjectName).dll"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

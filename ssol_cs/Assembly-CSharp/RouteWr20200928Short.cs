@@ -28,11 +28,11 @@ internal class RouteWr20200928Short : Route
         "-> Park",
         "Park ->",
         "Final Countdown",
-        "End - 100"
+        "End - 100",
     };
 
     // Token: 0x0400017F RID: 383
-    private float[] wrSplits = new float[]
+    private float[] splits = new float[]
     {
         10.36f,
         30.49f,
@@ -45,9 +45,10 @@ internal class RouteWr20200928Short : Route
         118.02f
     };
 
+    public override string Name() { return this.GetType().Name; }
     public override float[] BenchmarkSplits()
     {
-        return this.wrSplits;
+        return this.splits;
     }
 
     public override string[] SplitNames()

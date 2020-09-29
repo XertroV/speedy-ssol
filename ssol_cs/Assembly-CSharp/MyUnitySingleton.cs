@@ -4,6 +4,7 @@ using UnityEngine;
 // Token: 0x0200000B RID: 11
 public class MyUnitySingleton : MonoBehaviour
 {
+    public MenuComponentSelectSplits SelectSplits { get; private set; }
     // Token: 0x17000012 RID: 18
     // (get) Token: 0x0600005E RID: 94 RVA: 0x000024C6 File Offset: 0x000006C6
     public static MyUnitySingleton Instance
@@ -41,6 +42,8 @@ public class MyUnitySingleton : MonoBehaviour
         UnityEngine.Object.DontDestroyOnLoad(base.gameObject);
         //QualitySettings.vSyncCount = 0;
         //Application.targetFrameRate = 60;
+
+        SelectSplits = new MenuComponentSelectSplits();
     }
 
     // Token: 0x06000060 RID: 96 RVA: 0x00009B5C File Offset: 0x00007D5C

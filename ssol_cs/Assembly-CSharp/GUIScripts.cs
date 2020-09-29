@@ -11,6 +11,9 @@ public class GUIScripts : MonoBehaviour
     private bool showFrameTimeGraph = false;
     private bool showVelocityGraph = true;
 
+    private MenuScripts menuScripts;
+    private MenuComponentSelectSplits selectSplits;
+
     // Token: 0x06000005 RID: 5 RVA: 0x000029E8 File Offset: 0x00000BE8
     private void Start()
     {
@@ -64,32 +67,59 @@ public class GUIScripts : MonoBehaviour
             string.Empty,
             string.Empty
         };
-        this.bgTex = new Texture2D[]
+
+        /* Speedy additions! */
+
+        // bg textures for timers and things
+        bgTex = new Texture2D[]
         {
             new Texture2D(1, 1),
-            new Texture2D(1, 1)
+            new Texture2D(1, 1),
+            new Texture2D(1, 1),
+            new Texture2D(1, 1),
         };
-        this.bgTex[0].SetPixel(0, 0, new Color(0f, 0f, 0f, 0.25f));
-        this.bgTex[0].Apply();
-        this.bgTex[1].SetPixel(0, 0, new Color(0f, 0f, 0f, 0.5f));
-        this.bgTex[1].Apply();
-        this.keyStyle = new GUIStyle(this.myStyle);
-        this.keyStyle.padding = new RectOffset(0, 0, 10, 0);
-        this.keyStyle.alignment = TextAnchor.MiddleCenter;
-        this.keyStyle.fontSize = (int)((double)this.fontSizes.y / 1.5);
-        this.keyStyle.normal.background = this.blackTexture;
-        this.pressedKeyStyle = new GUIStyle(this.keyStyle);
-        this.pressedKeyStyle.normal.background = this.whiteTexture;
-        this.pressedKeyStyle.normal.textColor = Color.black;
-        this.splitGreen = new Color(0f, 0.8f, 0.21176471f, 1f);
-        this.splitRed = new Color(0.8f, 0.07058824f, 0f, 1f);
+        bgTex[0].SetPixel(0, 0, new Color(0f, 0f, 0f, 0.25f));
+        bgTex[0].Apply();
+        bgTex[1].SetPixel(0, 0, new Color(0f, 0f, 0f, 0.5f));
+        bgTex[1].Apply();
+        bgTex[2].SetPixel(0, 0, new Color(1f, 1f, 1f, 0.25f));
+        bgTex[2].Apply();
+        bgTex[3].SetPixel(0, 0, new Color(1f, 1f, 1f, 0.5f));
+        bgTex[3].Apply();
 
+        // onscreen WASD styles and dimensions
+        keyStyle = new GUIStyle(this.myStyle);
+        keyStyle.padding = new RectOffset(0, 0, 10, 0);
+        keyStyle.alignment = TextAnchor.MiddleCenter;
+        keyStyle.fontSize = (int)(this.fontSizes.y * 0.75f);
+        keyStyle.normal.background = this.bgTex[1];
+        pressedKeyStyle = new GUIStyle(this.keyStyle);
+        pressedKeyStyle.normal.background = this.bgTex[2];
+        pressedKeyStyle.normal.textColor = Color.black;
+        keyDimensions *= scale.y;
+        keyPadding *= scale.y;
+
+        // colors for timers
+        splitGreen = new Color(0f, 0.8f, 0.21176471f, 1f);
+        splitRed = new Color(0.8f, 0.07058824f, 0f, 1f);
+
+        // these are some experimental texture-graph things I was making
+        frameTimeTexture = new TextureLineGraphOfFloat(500, 60, Color.cyan, 5, 20);
+        velocityTimeTexture = new TextureLineGraphOfFloat(Screen.width, 100, new Color32(255, 19, 92, 255), 3, 32);
+        velocityTimeTexture.AddSeries(new Color32(19, 92, 255, 255));
+        velocityTimeTexture.AddSeries(new Color32(19, 255, 92, 255));
+
+        /* 
+        // this will get overwritten by MenuComponentSelectSplits soon
         this.route = new RouteWr20200928Short();
         this.SetRouteTo(this.route);
-        this.frameTimeTexture = new TextureLineGraphOfFloat(500, 60, Color.cyan, 5, 20);
-        this.velocityTimeTexture = new TextureLineGraphOfFloat(Screen.width, 100, new Color32(255, 19, 92, 255), 3, 32);
-        this.velocityTimeTexture.AddSeries(new Color32(19, 92, 255, 255));
-        this.velocityTimeTexture.AddSeries(new Color32(19, 255, 92, 255));
+        */
+        selectSplits = singleton.SelectSplits;
+        SetRouteTo(selectSplits.SelectedRoute);
+        Debug.Log("Loaded route: " + route);
+
+        selectSplits.AddCallback(SetRouteTo);
+        selectSplits.splitsStyle.font = myStyle.font;
     }
 
     // Token: 0x06000006 RID: 6 RVA: 0x00003088 File Offset: 0x00001288
@@ -153,7 +183,7 @@ public class GUIScripts : MonoBehaviour
         {
             this.showVelocityGraph = !this.showVelocityGraph;
         }
-        if (Input.GetKeyDown(KeyCode.Backspace))
+        if (Input.GetKeyDown(KeyCode.Backspace) && this.loadFadeValue < 1f && this.resetAfterTimeIs <= this.state.TotalTimePlayer)
         {
             this.loadFadeValue = 1.2f;
             this.loading = true;
@@ -161,13 +191,31 @@ public class GUIScripts : MonoBehaviour
         }
         if (this.resetAfterTimeIs > this.state.TotalTimePlayer && this.resetAfterTimeIs != 0.0)
         {
+            this.resetAfterTimeIs = 0;
             Debug.Log("load level 3 -- GUIScripts.Update-Reset/1");
-            Application.LoadLevelAsync(3);
             GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().fadeOut = true;
+            Application.LoadLevel(3);
         }
         if (Input.GetKeyDown(KeyCode.F4))
         {
             Application.Quit();
+        }
+        if (Input.GetKeyDown(KeyCode.LeftBracket))
+        {
+            selectSplits.UpdateRouteUI(-1);
+        }
+        if (Input.GetKeyDown(KeyCode.RightBracket))
+        {
+            selectSplits.UpdateRouteUI(+1);
+        }
+        if (Input.GetKeyDown(KeyCode.Question) || Input.GetKeyDown(KeyCode.Quote) || Input.GetKeyDown(KeyCode.DoubleQuote))
+        {
+            for (int i = 0; i < 100 - this.regularOrbs; i++)
+            {
+                GameObject.FindGameObjectWithTag("Player").GetComponent<MovementScripts>().returnGrowth();
+                GameObject.FindGameObjectWithTag("Player").GetComponent<GUIScripts>().OrbCollision();
+                GameObject.FindGameObjectWithTag("Player").GetComponent<GameState>().OrbPicked();
+            }
         }
     }
 
@@ -181,6 +229,8 @@ public class GUIScripts : MonoBehaviour
         this.velocityTimeTexture.AddDataPointAt(this.state.PlayerVelocityVector.z, tick30, 1);
         this.velocityTimeTexture.AddDataPointAt((float)this.state.playerVelocity, tick30, 0);
     }
+
+    private const float speedyTexWidth = 400f;
 
     // Token: 0x06000007 RID: 7 RVA: 0x00003330 File Offset: 0x00001530
     private void OnGUI()
@@ -235,15 +285,15 @@ public class GUIScripts : MonoBehaviour
                 this.gamma = (float)this.state.SqrtOneMinusVSquaredCWDividedByCSquared;
                 this.C = (float)this.state.SpeedOfLight;
                 this.playerVel = (float)this.state.PlayerVelocity;
-                float num = Mathf.Abs((float)this.state.MaxSpeed / this.C) * 75f;
-                if (double.IsNaN((double)num) || num == 0f || num > 75f)
+                float maxSpeedOverCX75 = Mathf.Abs((float)this.state.MaxSpeed / this.C) * 75f;
+                if (double.IsNaN((double)maxSpeedOverCX75) || maxSpeedOverCX75 == 0f || maxSpeedOverCX75 > 75f)
                 {
-                    num = 0.001f;
+                    maxSpeedOverCX75 = 0.001f;
                 }
-                float num2 = Mathf.Abs(this.playerVel / (float)this.state.MaxSpeed) * 15f;
-                if (double.IsNaN((double)num2) || num2 == 0f)
+                float playerSpeedOverMaxSpeedX15 = Mathf.Abs(this.playerVel / (float)this.state.MaxSpeed) * 15f;
+                if (double.IsNaN((double)playerSpeedOverMaxSpeedX15) || playerSpeedOverMaxSpeedX15 == 0f)
                 {
-                    num2 = 0.001f;
+                    playerSpeedOverMaxSpeedX15 = 0.001f;
                 }
                 int num3 = (int)(this.gamma / (1f + this.playerVel / this.C) * 372f);
                 int num4 = (int)(this.gamma / (1f - this.playerVel / this.C) * 767f);
@@ -263,17 +313,67 @@ public class GUIScripts : MonoBehaviour
                 GUI.BeginGroup(new Rect(this.numberPos.x, this.numberPos.y, this.numberSize.x, this.numberSize.y));
                 GUI.DrawTexture(new Rect(this.numberOffset.x, this.numberOffset.y, this.totalNumberSize.x, this.totalNumberSize.y), this.numbers);
                 GUI.EndGroup();
+
+                // start of analog speedo code
+
                 GUI.BeginGroup(new Rect(0f, (float)Screen.height - this.barSize.y, (float)Screen.width, this.barSize.y));
                 GUI.depth = 1;
-                GUIUtility.RotateAroundPivot(num2, new Vector2(this.playerArrowPos.x + this.playerArrowSize.x, this.playerArrowPos.y + this.playerArrowSize.y));
+
+                // set color of speedo numbers
+                GUI.skin.label.normal.textColor = new Color(
+                    1f,
+                    (float)Math.Pow(Math.Cos((this.state.PlayerVelocity / this.state.SpeedOfLight) * Math.PI / 2), 2),
+                    (float)Math.Pow(Math.Cos((this.state.PlayerVelocity / this.state.SpeedOfLight) * Math.PI / 2), 2),
+                    1f);
+                GUI.skin.label.fontSize = (int)(this.fontSizes.y * this.scale.y * 0.7);
+                GUI.skin.label.alignment = TextAnchor.MiddleRight;
+                var curSpeed = new GUIContent(this.state.PlayerVelocity.ToString("F2"));
+                var maxSpeed = new GUIContent(this.state.SpeedOfLight.ToString("F2"));
+                var curSSize = GUI.skin.label.CalcSize(curSpeed);
+                var maxSSize = GUI.skin.label.CalcSize(maxSpeed);
+                Vector2 speedoOffset = new Vector2((this.playerArrowPos.x - 100f) * this.scale.x, 60f * this.scale.y);
+                Debug.Log("num: " + maxSpeedOverCX75 + "\nnum2: " + playerSpeedOverMaxSpeedX15);
+                var lightArrowOrigin = lightArrowPos + lightArrowSize;
+                lightArrowOrigin.x = lightArrowPos.x;
+                var theta = maxSpeedOverCX75 * Math.PI / 180;
+                Vector2 maxSOff1 = new Vector2(
+                    (float)(this.lightArrow.height * Math.Sin(theta) * this.scale.x),
+                    (float)(this.lightArrow.height * Math.Cos(theta) * this.scale.y));
+                Vector2 maxSOff2 = new Vector2(
+                    (float)(this.lightArrow.width * Math.Cos(-theta) * this.scale.x),
+                    (float)(this.lightArrow.width * Math.Sin(-theta) * this.scale.y));
+                Vector2 maxSOffs = maxSOff1 - maxSOff2;
+
+                // speed of player
+                // the needles are drawn via rotating around a point
+                GUIUtility.RotateAroundPivot(playerSpeedOverMaxSpeedX15, new Vector2(this.playerArrowPos.x + this.playerArrowSize.x, this.playerArrowPos.y + this.playerArrowSize.y));
                 GUI.DrawTexture(new Rect(this.playerArrowPos.x, this.playerArrowPos.y, this.playerArrowSize.x, this.playerArrowSize.y), this.playerArrow);
-                GUIUtility.RotateAroundPivot(-num2, new Vector2(this.playerArrowPos.x + this.playerImageSize.x / 2f, this.playerArrowPos.y + this.playerImageSize.y / 2f));
+                GUIUtility.RotateAroundPivot(-playerSpeedOverMaxSpeedX15, new Vector2(this.playerArrowPos.x + this.playerImageSize.x / 2f, this.playerArrowPos.y + this.playerImageSize.y / 2f));
                 GUI.DrawTexture(new Rect(this.playerArrowPos.x, this.playerArrowPos.y - this.playerImageSize.y * 0.8f, this.playerImageSize.x, this.playerImageSize.y), this.playerImage);
-                GUIUtility.RotateAroundPivot(num2, new Vector2(this.playerArrowPos.x + this.playerImageSize.x / 2f, this.playerArrowPos.y + this.playerImageSize.y / 2f));
-                GUIUtility.RotateAroundPivot(-num2, new Vector2(this.playerArrowPos.x + this.playerArrowSize.x, this.playerArrowPos.y + this.playerArrowSize.y));
-                GUIUtility.RotateAroundPivot(-num, new Vector2(this.playerArrowPos.x + this.playerArrowSize.x + this.lightArrowSize.x / 10f, this.playerArrowPos.y));
+                GUIHelpers.DrawOutline(new Rect(this.playerArrowPos.x - curSSize.x + 10f * this.scale.x, this.playerArrowPos.y - 6f * this.scale.y, curSSize.x, curSSize.y), curSpeed, GUI.skin.label, Color.black, strokeWidth: 1f);
+                GUIUtility.RotateAroundPivot(playerSpeedOverMaxSpeedX15, new Vector2(this.playerArrowPos.x + this.playerImageSize.x / 2f, this.playerArrowPos.y + this.playerImageSize.y / 2f));
+                GUIUtility.RotateAroundPivot(-playerSpeedOverMaxSpeedX15, new Vector2(this.playerArrowPos.x + this.playerArrowSize.x, this.playerArrowPos.y + this.playerArrowSize.y));
+
+                //GUIHelpers.DrawOutline(new Rect(200f, 0, 400, 400), new GUIContent("TEST FOR HORIZONTAL"), GUI.skin.label, Color.black);
+
+                // speed of light
+                Vector2 laPos = new Vector2(this.playerArrowPos.x + this.playerArrowSize.x + this.lightArrowSize.x / 10f, this.playerArrowPos.y);
+                GUIUtility.RotateAroundPivot(-maxSpeedOverCX75, new Vector2(laPos.x, this.playerArrowPos.y));
                 GUI.DrawTexture(new Rect(this.lightArrowPos.x, this.lightArrowPos.y, this.lightArrowSize.x, this.lightArrowSize.y), this.lightArrow);
-                GUIUtility.RotateAroundPivot(num, new Vector2(this.playerArrowPos.x + this.playerArrowSize.x + this.lightArrowSize.x / 10f, this.playerArrowPos.y));
+                GUIUtility.RotateAroundPivot(maxSpeedOverCX75, new Vector2(laPos.x, laPos.y));
+                GUIHelpers.DrawOutline(new Rect(lightArrowOrigin.x - maxSSize.x * 0.8f - maxSOffs.x, lightArrowOrigin.y - maxSSize.y * 0.3f - maxSOffs.y, maxSSize.x, maxSSize.y), maxSpeed, GUI.skin.label, Color.black, strokeWidth: 1f);
+                GUIUtility.RotateAroundPivot(-maxSpeedOverCX75, new Vector2(laPos.x, laPos.y));
+                GUIUtility.RotateAroundPivot(maxSpeedOverCX75, new Vector2(laPos.x, laPos.y));
+
+                /* digital speedo */
+
+                //GUI.skin.label.normal.background = null;
+                //GUI.skin.label.padding = null;
+
+                /*(float)Math.Sin(this.state.PlayerVelocity / this.state.SpeedOfLight * Math.PI / 2),
+                (float)Math.Cos((this.state.PlayerVelocity / this.state.SpeedOfLight) * Math.PI / 2),
+                (float)Math.Pow(Math.Sin((this.state.PlayerVelocity / this.state.SpeedOfLight - 0.25f) * Math.PI / 2), 2.0),*/
+
                 GUI.EndGroup();
                 this.UpdateTmpTimes();
                 float num5 = this.alphaFadeValue;
@@ -286,17 +386,18 @@ public class GUIScripts : MonoBehaviour
 
             if (false)
             {
-                var labelAlignment = GUI.skin.label.alignment;
+                /* var labelAlignment = GUI.skin.label.alignment;
                 GUI.skin.label.alignment = TextAnchor.MiddleCenter;
                 var experimentalDisclaimer = new GUIContent("Experimental Modded Version:\nNew RelativisticParent.cs, Start() disabled for maptile.");
                 var expDisclaimerSize = GUI.skin.label.CalcSize(experimentalDisclaimer);
                 GUI.Label(new Rect((Screen.width - expDisclaimerSize.x) / 2, 25f, expDisclaimerSize.x, expDisclaimerSize.y), experimentalDisclaimer);
-                GUI.skin.label.alignment = labelAlignment;
+                GUI.skin.label.alignment = labelAlignment; */
             }
 
             GUI.skin.box.padding = new RectOffset(15, 15, 15, 0);
             GUI.skin.box.normal.background = this.bgTex[0];
             GUI.skin.box.fontSize = (int)this.fontSizes.y * 8 / 10;
+            GUI.skin.label.alignment = TextAnchor.MiddleLeft;
             if (this.showTimer)
             {
                 string timeStr = this.state.TotalTimePlayer.ToString("Time: 000.000");
@@ -304,8 +405,8 @@ public class GUIScripts : MonoBehaviour
                 Vector2 vecTimerDs = GUI.skin.box.CalcSize(new GUIContent("Time: 000.000"));
                 GUI.Box(new Rect(0f, 0f, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(timeStr));
                 GUI.Box(new Rect(0f, vecTimerDs.y, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(speedStr));
-                //GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(state.PlayerVelocityVector.magnitude.ToString("VMag: 00.00")));
-                GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(this.curFPS.ToString("FPS: 000.000")));
+                GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(state.MaxSpeed.ToString("MaxSpd: 00.00")));
+                //GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(this.curFPS.ToString("FPS: 000.000")));
 
                 var offsetFromSide = 60f;
                 var groupYOffset = vecTimerDs.y * 3;
@@ -353,23 +454,31 @@ public class GUIScripts : MonoBehaviour
             GUI.skin.box.padding = scaledPadding;
             GUI.skin.box.fontSize = (int)fontSize;
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
-            Vector2 vecSplits = GUI.skin.box.CalcSize(new GUIContent("test"));
+            Vector2 vecSplits = GUI.skin.box.CalcSize(new GUIContent("tst"));
             float col2Offset = GUI.skin.label.CalcSize(new GUIContent("-000.000")).x * 16 / 10;
             if (this.showTimer)
             {
                 // timer and splits on right
                 float timerBoxWidth = 400f * scale;
+                GUI.skin.box.fontSize = (int)(fontSize * 0.6666667);
                 GUI.skin.box.alignment = TextAnchor.MiddleRight;
                 GUI.Box(new Rect((float)Screen.width - timerBoxWidth, 0f, timerBoxWidth, vecSplits.y), new GUIContent("Time"));
                 GUI.skin.box.normal.background = null;
-                GUI.Box(new Rect((float)Screen.width - col2Offset, 0f, vecSplits.x, vecSplits.y), new GUIContent("+/-"));
+                GUI.Box(new Rect((float)Screen.width - col2Offset + vecSplits.x, 0f, vecSplits.x, vecSplits.y), new GUIContent("+/-"));
                 GUI.skin.box.alignment = TextAnchor.MiddleLeft;
+                var name = this.selectSplits.SelectedRoute.Name();
+                var maxNameLen = 23;
+                GUI.Box(new Rect((float)Screen.width - timerBoxWidth, 0f, timerBoxWidth, vecSplits.y), new GUIContent(name.Substring(0, maxNameLen) + (name.Length > maxNameLen ? "..." : "")));
+                GUI.skin.box.fontSize = (int)fontSize;
                 bool doneOnePreview = false;
                 for (int s = 0; s < this.splitOn.Length; s++)
                 {
                     GUI.skin.box.normal.background = this.bgTex[s % 2];
                     double tempTime = this.state.orbToSplit.ContainsKey(this.splitOn[s]) ? this.state.orbToSplit[this.splitOn[s]] : 0.0;
                     GUI.Box(new Rect((float)Screen.width - timerBoxWidth, vecSplits.y * (float)(s + 1), timerBoxWidth, vecSplits.y), new GUIContent(this.splitNames[s]));
+                    GUI.skin.box.normal.background = null;
+                    string splitTime;
+                    Color color = GUI.color;
                     if (tempTime > 0.0 || !doneOnePreview)
                     {
                         if (tempTime == 0.0 && !doneOnePreview)
@@ -377,18 +486,23 @@ public class GUIScripts : MonoBehaviour
                             doneOnePreview = true;
                             tempTime = this.state.TotalTimePlayer;
                         }
-                        GUI.skin.box.normal.background = null;
-                        string splitTime = tempTime.ToString("F03");
+                        splitTime = tempTime.ToString("F03");
                         vecSplits = GUI.skin.box.CalcSize(new GUIContent(splitTime));
                         float plusMinusSplitTime = (float)tempTime - this.wrSplits[s];
                         string pmSplit = ((plusMinusSplitTime < 0f) ? "" : "+") + plusMinusSplitTime.ToString("F02");
                         Vector2 vecPMSplit = GUI.skin.box.CalcSize(new GUIContent(pmSplit));
                         GUI.Label(new Rect((float)Screen.width - vecSplits.x, vecSplits.y * (float)(s + 1), vecSplits.x, vecSplits.y), splitTime);
-                        Color color = GUI.color;
                         GUI.color = ((plusMinusSplitTime < 0f) ? Color.green : Color.red);
                         GUI.Label(new Rect((float)Screen.width - col2Offset, vecSplits.y * (float)(s + 1), vecPMSplit.x, vecPMSplit.y), pmSplit);
-                        GUI.color = color;
                     }
+                    else
+                    {
+                        splitTime = this.wrSplits[s].ToString("F03");
+                        vecSplits = GUI.skin.box.CalcSize(new GUIContent(splitTime));
+                        GUI.color = Color.gray;
+                        GUI.Label(new Rect((float)Screen.width - vecSplits.x, vecSplits.y * (float)(s + 1), vecSplits.x, vecSplits.y), splitTime);
+                    }
+                    GUI.color = color;
                 }
             }
             GUI.color = Color.white;
@@ -463,6 +577,9 @@ public class GUIScripts : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().volume = this.volume;
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().saturated = this.saturated;
             }
+            this.selectSplits.DrawSelectSplitsFromMiddleCenter(Screen.width / 2, Screen.height * 0.1f);
+
+            GUIHelpers.DrawSpeedyTex(new Rect(50f * scale.x, 50f * scale.y, speedyTexWidth * scale.x, speedyTexWidth / 2 * scale.y), GUIHelpers.EaseOutElastic, scaleCloserToOne: 0.4f);
         }
         if (this.unset && this.frames > 5)
         {
@@ -608,20 +725,7 @@ public class GUIScripts : MonoBehaviour
 
     public void SetRouteTo(Route route)
     {
-        this.SetRouteTo(route, true);
-    }
-
-    public void SetRouteTo(Route route, bool reset)
-    {
         this.route = route;
-        if (reset)
-        {
-            this.ResetSplits();
-        }
-    }
-
-    public void ResetSplits()
-    {
         this.splitOn = this.route.SplitOn();
         this.splitNames = this.route.SplitNames();
         this.wrSplits = this.route.BenchmarkSplits();
@@ -630,13 +734,13 @@ public class GUIScripts : MonoBehaviour
     public void DrawKeyboard(float horizontalOffset)
     {
         float keyOffset = this.keyDimensions + this.keyPadding;
-        GUI.BeginGroup(new Rect((horizontalOffset) + 20f, (float)Screen.height - this.barSize.y * hudMainBodyRatio - 2f * keyOffset - 20f, 3f * keyOffset, 2f * keyOffset));
+        GUI.BeginGroup(new Rect((horizontalOffset + 20f), ((float)Screen.height - this.barSize.y * hudMainBodyRatio - 2f * keyOffset - 20f), 3f * keyOffset, 2f * keyOffset));
         float halfKeyPadding = this.keyPadding / 2f;
         GUI.Box(new Rect(0f, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
         GUI.Box(new Rect(keyOffset, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
         GUI.Box(new Rect(keyOffset * 2f, keyOffset, keyOffset, keyOffset), this.bgTex[0]);
         GUI.Box(new Rect(keyOffset, 0f, keyOffset, keyOffset), this.bgTex[0]);
-        GUI.BeginGroup(new Rect(halfKeyPadding, halfKeyPadding, 3f * keyOffset - this.keyPadding, 2f * keyOffset - this.keyPadding));
+        GUI.BeginGroup(new Rect(halfKeyPadding, halfKeyPadding, (3f * keyOffset - this.keyPadding), (2f * keyOffset - this.keyPadding)));
         GUI.skin.button.alignment = TextAnchor.MiddleCenter;
 
         DrawKey("W", KeyCode.W, 1, 0);
@@ -651,12 +755,8 @@ public class GUIScripts : MonoBehaviour
     public void DrawKey(string letter, KeyCode k, float x, float y)
     {
         float keyOffset = this.keyDimensions + this.keyPadding;
-        GUI.Button(new Rect(x * keyOffset, y * keyOffset, this.keyDimensions, this.keyDimensions), letter, Input.GetKey(k) ? this.pressedKeyStyle : this.keyStyle);
-    }
-
-    private void OnDrawGizmos()
-    {
-        DrawVelocityArrow();
+        //GUI.Button(new Rect(x * keyOffset, y * keyOffset, this.keyDimensions, this.keyDimensions), letter, Input.GetKey(k) ? this.pressedKeyStyle : this.keyStyle);
+        GUI.Label(new Rect(x * keyOffset, y * keyOffset, this.keyDimensions, this.keyDimensions), letter, Input.GetKey(k) ? this.pressedKeyStyle : this.keyStyle);
     }
 
     public void DrawVelocityArrow()
@@ -692,20 +792,6 @@ public class GUIScripts : MonoBehaviour
         //Debug.Log("state.PlayerVelocityVector: " + state.PlayerVelocityVector);
         //Debug.Log("camera position forward: " + cam.transform.position + cam.transform.TransformDirection(cam.transform.forward));
 
-    }
-
-    void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 1f / 45f)
-    {
-        GameObject myLine = new GameObject();
-        myLine.transform.position = start;
-        myLine.AddComponent<LineRenderer>();
-        LineRenderer lr = myLine.GetComponent<LineRenderer>();
-        lr.material = new Material(Shader.Find("Particles/Alpha Blended Premultiply"));
-        lr.SetColors(color, color);
-        lr.SetWidth(0.001f, 0.001f);
-        lr.SetPosition(0, start);
-        lr.SetPosition(1, end);
-        GameObject.Destroy(myLine, duration);
     }
 
     private List<GameObject> lines;
@@ -965,10 +1051,10 @@ public class GUIScripts : MonoBehaviour
     private double resetAfterTimeIs;
 
     // Token: 0x04000054 RID: 84
-    private float keyDimensions = 40f;
+    private float keyDimensions = 60f;
 
     // Token: 0x04000055 RID: 85
-    private float keyPadding = 10f;
+    private float keyPadding = 15f;
 
     // Token: 0x04000056 RID: 86
     private GUIStyle keyStyle;

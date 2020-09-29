@@ -1,9 +1,66 @@
 ﻿using System;
+using System.IO;
 using UnityEngine;
 
 // Token: 0x02000006 RID: 6
 public class MenuScripts : MonoBehaviour
 {
+    private const float SLIDER_X_RES = 904f;
+    private const float FULL_SCREEN_X = 2560f;
+    private const float FULL_SCREEN_Y = 1440f;
+    public Texture2D menuTexture;
+    public Texture2D creditTexture;
+    private Texture2D blackTexture;
+    public Texture2D[] playTextures;
+    public Texture2D[] creditTextures;
+    public Texture2D[] quitTextures;
+    public Texture2D[] optionTextures;
+    private Vector2 difference = Vector2.zero;
+    private Vector2 size = Vector2.zero;
+    private Vector2 scale = Vector2.zero;
+    private Vector2 playTextureSize = new Vector2(158f, 80f);
+    private Vector2 creditTextureSize = new Vector2(291f, 81f);
+    private Vector2 quitTextureSize = new Vector2(185f, 80f);
+    private Vector2 optionTextureSize = new Vector2(274f, 80f);
+    private Vector2 playTexturePos = new Vector2(1635f, 837f);
+    private Vector2 creditTexturePos = new Vector2(1574f, 938f);
+    private Vector2 quitTexturePos = new Vector2(1632f, 1134f);
+    private Vector2 optionTexturePos = new Vector2(1583f, 1037f);
+    private bool mouseDown;
+    private float alphaFadeValue;
+    private float startFadeValue;
+    private bool credits;
+    private bool options;
+    public Texture2D loadTexture;
+    public Texture2D optionsTexture;
+    private Vector2 originalMenuSize = new Vector2(2560f, 1440f);
+    public Texture2D[] menuTextures;
+    private Vector2 menuTextureSize = new Vector2(303f, 85f);
+    private Vector2 menuTexturePos = new Vector2(1493f, 1084f);
+    public Texture2D[] checkBoxTextures;
+    private Vector2 checkBoxSize = new Vector2(110f, 110f);
+    private Vector2 saturatedPos = new Vector2(912f, 891f);
+    private Vector2 deSaturatedPos = new Vector2(1183f, 891f);
+    public Texture2D sliderBox;
+    private Vector2 sliderBoxSize = new Vector2(65f, 65f);
+    private Vector2 volumeSliderPos = new Vector2(970f, 570.5f);
+    private Vector2 mouseSliderPos = new Vector2(970f, 715f);
+    private float sliderLength;
+    private Rect volumeRect;
+    private Rect mouseRect;
+    private MyUnitySingleton singleton;
+    private MenuComponentSelectSplits selectSplits;
+    public float volume;
+    public float mouseSensitivity;
+    private bool volumeMove;
+    private bool mouseMove;
+    private bool saturated = true;
+    private bool unSaturated;
+    private bool unset = true;
+    private bool fadeOut;
+    private bool fadeIn = true;
+
+    private bool skipMenuOnFirstLoad = true;
     private const bool skipIntroSlides = true;
 
     // Token: 0x0600003B RID: 59 RVA: 0x00006090 File Offset: 0x00004290
@@ -51,7 +108,9 @@ public class MenuScripts : MonoBehaviour
         }
         this.volumeRect = new Rect(this.volume * this.sliderLength + this.volumeSliderPos.x, this.volumeSliderPos.y, this.sliderBoxSize.x, this.sliderBoxSize.y);
         this.mouseRect = new Rect(this.mouseSensitivity * this.sliderLength + this.mouseSliderPos.x, this.mouseSliderPos.y, this.sliderBoxSize.x, this.sliderBoxSize.y);
-        if (Time.realtimeSinceStartup < 2)
+        this.singleton = GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>();
+        this.selectSplits = this.singleton.SelectSplits;
+        if (Time.realtimeSinceStartup < 2 && skipMenuOnFirstLoad)
         {
             GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().fadeOut = true;
             Application.LoadLevel(3);
@@ -147,6 +206,7 @@ public class MenuScripts : MonoBehaviour
                 GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.startFadeValue);
             }
             GUI.DrawTexture(new Rect(this.difference.x, this.difference.y, this.size.x, this.size.y), this.menuTexture);
+            GUIHelpers.DrawSpeedyTex(new Rect(1400 * scale.x, 25 * scale.y, 800 * scale.x, 400 * scale.y), GUIHelpers.EaseInOutBounce, scaleCloserToOne: 0.6f);
             GUI.EndGroup();
             GUI.depth = 1;
             GUI.BeginGroup(new Rect(this.difference.x, this.difference.y, this.size.x, this.size.y));
@@ -195,6 +255,8 @@ public class MenuScripts : MonoBehaviour
             {
                 GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.alphaFadeValue);
             }
+            GUI.skin.label.fontSize = 50;
+            //GUI.Label(new Rect(50, 50, Screen.width, Screen.height), new GUIContent("TEST LABEL -- this.options == false"));
         }
         else
         {
@@ -246,12 +308,17 @@ public class MenuScripts : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().mouseSensitivity = this.mouseSensitivity;
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().saturated = this.saturated;
             }
+            GUI.skin.label.fontSize = 50;
+            //GUI.Label(new Rect(50, 50, Screen.width, Screen.height), new GUIContent("TEST LABEL -- this.options == true"));
+            this.selectSplits.DrawSelectSplitsFromMiddleCenter(Screen.width / 2, Screen.height * 0.1f);
         }
         if (this.credits && this.mouseDown)
         {
             this.credits = false;
             this.mouseDown = false;
         }
+        GUI.skin.label.fontSize = 50;
+        //GUI.Label(new Rect(50, 100, Screen.width, Screen.height), new GUIContent("TEST LABEL -- MenuScripts"));
     }
 
     // Token: 0x0600003E RID: 62 RVA: 0x000023FD File Offset: 0x000005FD
@@ -260,159 +327,4 @@ public class MenuScripts : MonoBehaviour
         return new Vector2(input.x * this.scale.x, input.y * this.scale.y);
     }
 
-    // Token: 0x04000090 RID: 144
-    private const float SLIDER_X_RES = 904f;
-
-    // Token: 0x04000091 RID: 145
-    private const float FULL_SCREEN_X = 2560f;
-
-    // Token: 0x04000092 RID: 146
-    private const float FULL_SCREEN_Y = 1440f;
-
-    // Token: 0x04000093 RID: 147
-    public Texture2D menuTexture;
-
-    // Token: 0x04000094 RID: 148
-    public Texture2D creditTexture;
-
-    // Token: 0x04000095 RID: 149
-    private Texture2D blackTexture;
-
-    // Token: 0x04000096 RID: 150
-    public Texture2D[] playTextures;
-
-    // Token: 0x04000097 RID: 151
-    public Texture2D[] creditTextures;
-
-    // Token: 0x04000098 RID: 152
-    public Texture2D[] quitTextures;
-
-    // Token: 0x04000099 RID: 153
-    public Texture2D[] optionTextures;
-
-    // Token: 0x0400009A RID: 154
-    private Vector2 difference = Vector2.zero;
-
-    // Token: 0x0400009B RID: 155
-    private Vector2 size = Vector2.zero;
-
-    // Token: 0x0400009C RID: 156
-    private Vector2 scale = Vector2.zero;
-
-    // Token: 0x0400009D RID: 157
-    private Vector2 playTextureSize = new Vector2(158f, 80f);
-
-    // Token: 0x0400009E RID: 158
-    private Vector2 creditTextureSize = new Vector2(291f, 81f);
-
-    // Token: 0x0400009F RID: 159
-    private Vector2 quitTextureSize = new Vector2(185f, 80f);
-
-    // Token: 0x040000A0 RID: 160
-    private Vector2 optionTextureSize = new Vector2(274f, 80f);
-
-    // Token: 0x040000A1 RID: 161
-    private Vector2 playTexturePos = new Vector2(1635f, 837f);
-
-    // Token: 0x040000A2 RID: 162
-    private Vector2 creditTexturePos = new Vector2(1574f, 938f);
-
-    // Token: 0x040000A3 RID: 163
-    private Vector2 quitTexturePos = new Vector2(1632f, 1134f);
-
-    // Token: 0x040000A4 RID: 164
-    private Vector2 optionTexturePos = new Vector2(1583f, 1037f);
-
-    // Token: 0x040000A5 RID: 165
-    private bool mouseDown;
-
-    // Token: 0x040000A6 RID: 166
-    private float alphaFadeValue;
-
-    // Token: 0x040000A7 RID: 167
-    private float startFadeValue;
-
-    // Token: 0x040000A8 RID: 168
-    private bool credits;
-
-    // Token: 0x040000A9 RID: 169
-    private bool options;
-
-    // Token: 0x040000AA RID: 170
-    public Texture2D loadTexture;
-
-    // Token: 0x040000AB RID: 171
-    public Texture2D optionsTexture;
-
-    // Token: 0x040000AC RID: 172
-    private Vector2 originalMenuSize = new Vector2(2560f, 1440f);
-
-    // Token: 0x040000AD RID: 173
-    public Texture2D[] menuTextures;
-
-    // Token: 0x040000AE RID: 174
-    private Vector2 menuTextureSize = new Vector2(303f, 85f);
-
-    // Token: 0x040000AF RID: 175
-    private Vector2 menuTexturePos = new Vector2(1493f, 1084f);
-
-    // Token: 0x040000B0 RID: 176
-    public Texture2D[] checkBoxTextures;
-
-    // Token: 0x040000B1 RID: 177
-    private Vector2 checkBoxSize = new Vector2(110f, 110f);
-
-    // Token: 0x040000B2 RID: 178
-    private Vector2 saturatedPos = new Vector2(912f, 891f);
-
-    // Token: 0x040000B3 RID: 179
-    private Vector2 deSaturatedPos = new Vector2(1183f, 891f);
-
-    // Token: 0x040000B4 RID: 180
-    public Texture2D sliderBox;
-
-    // Token: 0x040000B5 RID: 181
-    private Vector2 sliderBoxSize = new Vector2(65f, 65f);
-
-    // Token: 0x040000B6 RID: 182
-    private Vector2 volumeSliderPos = new Vector2(970f, 570.5f);
-
-    // Token: 0x040000B7 RID: 183
-    private Vector2 mouseSliderPos = new Vector2(970f, 715f);
-
-    // Token: 0x040000B8 RID: 184
-    private float sliderLength;
-
-    // Token: 0x040000B9 RID: 185
-    private Rect volumeRect;
-
-    // Token: 0x040000BA RID: 186
-    private Rect mouseRect;
-
-    // Token: 0x040000BB RID: 187
-    public float volume;
-
-    // Token: 0x040000BC RID: 188
-    public float mouseSensitivity;
-
-    // Token: 0x040000BD RID: 189
-    private bool volumeMove;
-
-    // Token: 0x040000BE RID: 190
-    private bool mouseMove;
-
-    // Token: 0x040000BF RID: 191
-    private bool saturated = true;
-
-    // Token: 0x040000C0 RID: 192
-    private bool unSaturated;
-
-    // Token: 0x040000C1 RID: 193
-    private bool unset = true;
-
-    // Token: 0x040000C2 RID: 194
-    private bool fadeOut;
-
-    // Token: 0x040000C3 RID: 195
-    private bool fadeIn = true;
 }

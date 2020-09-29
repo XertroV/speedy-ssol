@@ -141,6 +141,8 @@ internal class RouteWr20200921Long : Route
         118.02f
     };
 
+    public override string Name() { return this.GetType().Name; }
+
     public override float[] BenchmarkSplits()
     {
         return this.wrSplits;
