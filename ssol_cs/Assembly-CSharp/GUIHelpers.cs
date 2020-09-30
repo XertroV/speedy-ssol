@@ -13,6 +13,7 @@ public class GUIHelpers
         "(backspace) -- Start over, reset timers",
         "T -- Toggle timers showing",
         "O -- Toggle orbs showing",
+        "F4 -- Quit",
         "",
         "Add custom splits to the 'splits' folder (copy an existing one as a template). You need to make sure the orb numbers are correct and the file is correctly formatted."
     });

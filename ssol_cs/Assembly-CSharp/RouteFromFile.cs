@@ -24,35 +24,73 @@ public class RouteFromFile : Route
             while ((line = file.ReadLine()) != null)
             {
                 if (line.Length == 0) { continue; }
-                if (line.StartsWith(">"))
+                else if (line.StartsWith(">"))
                 {
                     name = line.Remove(0, 1);
                     continue;
                 }
-                if (line.Contains(":"))
+                else if (line.StartsWith("#") || line.StartsWith(";"))
+                {
+                    // comment
+                    continue;
+                }
+                else if (line.Contains(":"))
                 {
                     currReading = line.Replace(":", "");
                     continue;
                 }
-
-                switch (currReading)
+                else
                 {
-                    case "splitOrbs":
-                        splitOrbs.Add(int.Parse(line));
-                        break;
-                    case "splitNames":
-                        splitNames.Add(line);
-                        break;
-                    case "splits":
-                        splits.Add(float.Parse(line));
-                        break;
+                    switch (currReading)
+                    {
+                        case "splitOrbs":
+                            splitOrbs.Add(int.Parse(line));
+                            break;
+                        case "splitNames":
+                            splitNames.Add(line);
+                            break;
+                        case "splits":
+                            splits.Add(float.Parse(line));
+                            break;
+                        default:
+                            Debug.LogWarning(string.Join("\n", new string[] {
+                                $"WARNING -- Reading route from file named `{filename}`.",
+                                "I am meant to be reading section `{currReading}` -- but I don't know what that is.",
+                                "Is the section name typoed?",
+                                $"Otherwise, there might be a problem with this line:",
+                                $"    `{line}`",
+                                "-- WARNING END --"
+                            }));
+                            break;
+                    }
                 }
             }
+
+            // splitNames is an optional section
+            if (splitNames.Count == 0)
+            {
+                foreach (var o in splitOrbs)
+                {
+                    splitNames.Add(o.ToString());
+                }
+            }
+
             r = new LoadedRoute();
             r.name = name;
             r.splits = splits.ToArray();
             r.splitNames = splitNames.ToArray();
             r.splitOrbs = splitOrbs.ToArray();
+            if (r.splits.Length != r.splitNames.Length || r.splits.Length != r.splitOrbs.Length)
+            {
+                Debug.LogWarning(string.Join("\n", new string[]
+                {
+                    $"WARNING -- Reading roue from `{filename}` and ended up with mismatching numbers of splits, names, and orbs:",
+                    $"splits (times): {r.splits.Length} total",
+                    $"splits (names): {r.splitNames.Length} total",
+                    $"splits (orbs) : {r.splitOrbs.Length} total",
+                    "You probably want to check this split file to make sure it's all okay."
+                }));
+            }
             Debug.Log($"RouteFromFile loaded: {r}");
         }
     }

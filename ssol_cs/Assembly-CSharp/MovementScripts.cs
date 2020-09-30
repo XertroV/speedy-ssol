@@ -138,6 +138,7 @@ public class MovementScripts : MonoBehaviour
             if ((double)this.speedOfLightTarget == this.state.MaxSpeed && !this.state.GameWin)
             {
                 this.state.GameWin = true;
+                this.state.WriteOutOrbSplits();
             }
         }
     }

@@ -467,6 +467,50 @@ public class GameState : MonoBehaviour
         }
     }
 
+    public void WriteOutOrbSplits()
+    {
+        var splitsDir = MenuComponentSelectSplits.SplitsDir();
+        var splitsOut = splitsDir + "\\my-splits";
+        var now = DateTime.Now;
+        var win = this.GameWin;
+        var time = this.TotalTimePlayer;
+        var sFile = splitsOut + $"\\{ConvertToUnixTimestamp(now)}-{time.ToString("F02")}s-win={win}.txt";
+        if (!Directory.Exists(splitsOut))
+        {
+            Directory.CreateDirectory(splitsOut);
+        }
+
+        Debug.Log("writing file: " + sFile);
+        using (TextWriter file = new StreamWriter(sFile))
+        {
+            file.WriteLine($">{now.ToShortDateString()} {now.ToShortTimeString()}");
+            file.WriteLine($"#GameWin={this.GameWin}");
+            file.WriteLine($"#CurrPlayerTime={this.TotalTimePlayer}");
+            file.WriteLine($"#CurrWorldTime={this.TotalTimeWorld}");
+            file.WriteLine("splits:");
+            foreach (var s in this.splits)
+            {
+                if (s != 0.0f)
+                {
+                    file.WriteLine(s.ToString("F03"));
+                }
+            }
+            file.WriteLine("splitOrbs:");
+            foreach (var o in this.orbCollectionList)
+            {
+                file.WriteLine(o.ToString());
+            }
+        }
+    }
+
+    public static int ConvertToUnixTimestamp(DateTime date)
+    {
+        DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        TimeSpan diff = date.ToUniversalTime() - origin;
+        return (int)Math.Floor(diff.TotalSeconds);
+    }
+
+
     // Token: 0x04000051 RID: 81
     public const int splitDistance = 21000;
 

@@ -128,6 +128,11 @@ public class MenuComponentSelectSplits
         cbs.Add(cb);
     }
 
+    public static string SplitsDir()
+    {
+        return Environment.CurrentDirectory + "\\splits";
+    }
+
     private void LoadSplitsFromLocalDir()
     {
         var splitsDir = Environment.CurrentDirectory + "\\splits";

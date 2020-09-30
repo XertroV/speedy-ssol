@@ -192,6 +192,7 @@ public class GUIScripts : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Backspace) && this.loadFadeValue < 1f && this.resetAfterTimeIs <= this.state.TotalTimePlayer)
         {
+            this.HandleTimingsOnExitResetWinEtc();
             this.loadFadeValue = 1.2f;
             this.loading = true;
             this.resetAfterTimeIs = this.state.TotalTimePlayer + 0.01;
@@ -205,6 +206,7 @@ public class GUIScripts : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.F4))
         {
+            this.HandleTimingsOnExitResetWinEtc();
             Application.Quit();
         }
         if (Input.GetKeyDown(KeyCode.LeftBracket))
@@ -224,6 +226,14 @@ public class GUIScripts : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Player").GetComponent<GameState>().OrbPicked();
             }
         }*/
+    }
+
+    private void HandleTimingsOnExitResetWinEtc()
+    {
+        if (!this.state.GameWin)
+        {
+            state.WriteOutOrbSplits();
+        }
     }
 
     private void UpdateFrameTimeGraph(int tick30)
@@ -327,6 +337,7 @@ public class GUIScripts : MonoBehaviour
                 GUI.depth = 1;
 
                 // set color of speedo numbers
+                var prevColor = GUI.skin.label.normal.textColor;
                 GUI.skin.label.normal.textColor = new Color(
                     1f,
                     (float)Math.Pow(Math.Cos((this.state.PlayerVelocity / this.state.SpeedOfLight) * Math.PI / 2), 2),
@@ -382,6 +393,7 @@ public class GUIScripts : MonoBehaviour
                 (float)Math.Pow(Math.Sin((this.state.PlayerVelocity / this.state.SpeedOfLight - 0.25f) * Math.PI / 2), 2.0),*/
 
                 GUI.EndGroup();
+                GUI.skin.label.normal.textColor = prevColor;
                 this.UpdateTmpTimes();
                 float num5 = this.alphaFadeValue;
                 if (this.orbFadeValue >= 0f)
@@ -391,15 +403,11 @@ public class GUIScripts : MonoBehaviour
             }
             GUI.BeginGroup(new Rect(0f, 0f, (float)Screen.width, (float)Screen.height));
 
-            if (false)
-            {
-                /* var labelAlignment = GUI.skin.label.alignment;
-                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-                var experimentalDisclaimer = new GUIContent("Experimental Modded Version:\nNew RelativisticParent.cs, Start() disabled for maptile.");
-                var expDisclaimerSize = GUI.skin.label.CalcSize(experimentalDisclaimer);
-                GUI.Label(new Rect((Screen.width - expDisclaimerSize.x) / 2, 25f, expDisclaimerSize.x, expDisclaimerSize.y), experimentalDisclaimer);
-                GUI.skin.label.alignment = labelAlignment; */
-            }
+            GUI.skin.label.alignment = TextAnchor.LowerLeft;
+            GUI.skin.label.fontSize = (int)this.fontSizes.y * 4 / 10;
+            var modLabel = new GUIContent("Speedy mod, v0.1");
+            var modLabelSize = GUI.skin.label.CalcSize(modLabel);
+            GUIHelpers.DrawOutline(new Rect(0, Screen.height - modLabelSize.y, modLabelSize.x, modLabelSize.y), modLabel, GUI.skin.label, Color.black);
 
             GUI.skin.box.padding = new RectOffset(15, 15, 15, 0);
             GUI.skin.box.normal.background = this.bgTex[0];
@@ -520,17 +528,18 @@ public class GUIScripts : MonoBehaviour
             float orbsDisplayWidth = 0f;
             if (this.showOrbs)
             {
-                orbsDisplayWidth = 400f;
+                orbsDisplayWidth = 400f * this.scale.x;
+                var orbsOffset = 100f;
                 GUI.skin.box.padding = new RectOffset(0, 0, 0, 0);
                 Vector2 boxTxtSize = GUI.skin.box.CalcSize(new GUIContent("00"));
                 GUI.skin.box.padding = new RectOffset((int)(Math.Max(0f, GUIScripts.defaultOrbBoxSize - boxTxtSize.x) / 2f), 0, (int)((GUIScripts.defaultOrbBoxSize - boxTxtSize.y) / 2f), 0);
-                GUI.BeginGroup(new Rect(10f, 100f, orbsDisplayWidth, 400f));
+                GUI.BeginGroup(new Rect(10f, orbsOffset, orbsDisplayWidth, orbsDisplayWidth));
                 this.DrawRecentOrbs();
                 GUI.EndGroup();
                 GUI.skin.box.padding = new RectOffset(0, 0, 0, 0);
                 boxTxtSize = GUI.skin.box.CalcSize(new GUIContent("@"));
                 GUI.skin.box.padding = new RectOffset((int)((GUIScripts.defaultOrbBoxSize - boxTxtSize.x) / 2f), 0, (int)((GUIScripts.defaultOrbBoxSize - boxTxtSize.y) / 2f), 0);
-                GUI.BeginGroup(new Rect(10f, 510f, orbsDisplayWidth, 400f));
+                GUI.BeginGroup(new Rect(10f, orbsOffset + 10f + orbsDisplayWidth, orbsDisplayWidth, orbsDisplayWidth));
                 this.DrawOrbsTotal();
                 GUI.EndGroup();
             }
@@ -1095,6 +1104,4 @@ public class GUIScripts : MonoBehaviour
     public float[] wrSplits;
 
     public Route route;
-
-
 }
