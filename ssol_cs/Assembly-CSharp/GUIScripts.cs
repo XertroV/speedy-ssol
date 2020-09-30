@@ -13,7 +13,11 @@ public class GUIScripts : MonoBehaviour
 
     private Vector2 scaleStatic;
     // fix for some resolutions
+    // This doens't seem to work. Not sure why.
     private Vector2 fix16by10;
+
+    private const float timerBoxWidth = 500f;
+    private const int maxTimerNameLen = 28;
 
     private MenuScripts menuScripts;
     private MenuComponentSelectSplits selectSplits;
@@ -350,7 +354,7 @@ public class GUIScripts : MonoBehaviour
                 var curSSize = GUI.skin.label.CalcSize(curSpeed);
                 var maxSSize = GUI.skin.label.CalcSize(maxSpeed);
                 Vector2 speedoOffset = new Vector2((this.playerArrowPos.x - 100f) * this.scale.x, 60f * this.scale.y);
-                Debug.Log("num: " + maxSpeedOverCX75 + "\nnum2: " + playerSpeedOverMaxSpeedX15);
+                //Debug.Log("num: " + maxSpeedOverCX75 + "\nnum2: " + playerSpeedOverMaxSpeedX15);
                 var lightArrowOrigin = lightArrowPos + lightArrowSize;
                 lightArrowOrigin.x = lightArrowPos.x;
                 var theta = maxSpeedOverCX75 * Math.PI / 180;
@@ -475,24 +479,23 @@ public class GUIScripts : MonoBehaviour
             if (this.showTimer)
             {
                 // timer and splits on right
-                float timerBoxWidth = 400f * localScale;
+                float tbWidth = timerBoxWidth * localScale;
                 GUI.skin.box.fontSize = (int)(fontSize * 0.8);
                 GUI.skin.box.alignment = TextAnchor.MiddleRight;
-                GUI.Box(new Rect((float)Screen.width - timerBoxWidth, 0f, timerBoxWidth, vecSplits.y), new GUIContent("Time"));
+                GUI.Box(new Rect((float)Screen.width - tbWidth, 0f, tbWidth, vecSplits.y), new GUIContent("Time"));
                 GUI.skin.box.normal.background = null;
                 GUI.Box(new Rect((float)Screen.width - col2Offset + vecSplits.x, 0f, vecSplits.x, vecSplits.y), new GUIContent("+/-"));
                 GUI.skin.box.alignment = TextAnchor.MiddleLeft;
                 var name = this.selectSplits.SelectedRoute.Name();
                 var nameSize = GUI.skin.box.CalcSize(new GUIContent(name));
-                var maxNameLen = 30;
-                GUI.Box(new Rect((float)Screen.width - timerBoxWidth, 0f, timerBoxWidth, vecSplits.y), new GUIContent(name.Length > maxNameLen ? name.Substring(0, maxNameLen) + "..." : name));
+                GUI.Box(new Rect((float)Screen.width - tbWidth, 0f, tbWidth, vecSplits.y), new GUIContent(name.Length > maxTimerNameLen ? name.Substring(0, maxTimerNameLen) + "..." : name));
                 GUI.skin.box.fontSize = (int)fontSize;
                 bool doneOnePreview = false;
                 for (int s = 0; s < this.splitOn.Length; s++)
                 {
                     GUI.skin.box.normal.background = this.bgTex[s % 2];
                     double tempTime = this.state.orbToSplit.ContainsKey(this.splitOn[s]) ? this.state.orbToSplit[this.splitOn[s]] : 0.0;
-                    GUI.Box(new Rect((float)Screen.width - timerBoxWidth, vecSplits.y * (float)(s + 1), timerBoxWidth, vecSplits.y), new GUIContent(this.splitNames[s]));
+                    GUI.Box(new Rect((float)Screen.width - tbWidth, vecSplits.y * (float)(s + 1), tbWidth, vecSplits.y), new GUIContent(this.splitNames[s]));
                     GUI.skin.box.normal.background = null;
                     string splitTime;
                     Color color = GUI.color;
