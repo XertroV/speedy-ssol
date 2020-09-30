@@ -22,6 +22,8 @@ public class GUIScripts : MonoBehaviour
     private MenuScripts menuScripts;
     private MenuComponentSelectSplits selectSplits;
 
+    private static string version = "v0.1a";
+
     // Token: 0x06000005 RID: 5 RVA: 0x000029E8 File Offset: 0x00000BE8
     private void Start()
     {
@@ -409,7 +411,7 @@ public class GUIScripts : MonoBehaviour
 
             GUI.skin.label.alignment = TextAnchor.LowerLeft;
             GUI.skin.label.fontSize = (int)this.fontSizes.y * 4 / 10;
-            var modLabel = new GUIContent("Speedy mod, v0.1");
+            var modLabel = new GUIContent($"Speedy mod, {version}");
             var modLabelSize = GUI.skin.label.CalcSize(modLabel);
             GUIHelpers.DrawOutline(new Rect(0, Screen.height - modLabelSize.y, modLabelSize.x, modLabelSize.y), modLabel, GUI.skin.label, Color.black);
 

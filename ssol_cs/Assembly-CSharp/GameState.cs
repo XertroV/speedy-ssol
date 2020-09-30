@@ -484,9 +484,9 @@ public class GameState : MonoBehaviour
         using (TextWriter file = new StreamWriter(sFile))
         {
             file.WriteLine($">{now.ToShortDateString()} {now.ToShortTimeString()}");
-            file.WriteLine($"#GameWin={this.GameWin}");
-            file.WriteLine($"#CurrPlayerTime={this.TotalTimePlayer}");
-            file.WriteLine($"#CurrWorldTime={this.TotalTimeWorld}");
+            file.WriteLine($";GameWin={this.GameWin}");
+            file.WriteLine($";CurrPlayerTime={this.TotalTimePlayer}");
+            file.WriteLine($";CurrWorldTime={this.TotalTimeWorld}");
             file.WriteLine("splits:");
             foreach (var s in this.splits)
             {
