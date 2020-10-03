@@ -1,0 +1,34 @@
+>AC's 1:57
+
+splitNames:
+Tutorial - 7
+Donut - 22
+U-Turn - 44
+-> Hallway
+Hallway ->
+-> Park
+Park ->
+Final Countdown
+End - 100
+
+splitOrbs:
+94
+23
+56
+59
+47
+92
+90
+71
+99
+
+splits:
+9.433
+29.567
+47.367
+69.433
+74.033
+82.400
+92.933
+111.017
+117.100
