@@ -7,6 +7,8 @@ public class GUIHelpers
 {
     private static Texture2D speedyTex = LoadTextureFromPng(@"a-speedy-ssol_Data\Speedrun\speedy.png");
 
+    public static Vector2 SpeedyTexDimensions { get => new Vector2(speedyTex.width, speedyTex.height); }
+
     private static string controls = string.Join("\n", new string[] {
         "## In-Game Controlls ##",
         "[ and ] -- Change splits in-game",
@@ -17,8 +19,6 @@ public class GUIHelpers
         "",
         "Add custom splits to the 'splits' folder (copy an existing one as a template). You need to make sure the orb numbers are correct and the file is correctly formatted."
     });
-
-    public static Vector2 SpeedyTexDimensions { get => new Vector2(speedyTex.width, speedyTex.height); }
 
     public static void DrawControlsInfo(float width)
     {
@@ -49,9 +49,9 @@ public class GUIHelpers
         DrawSpeedyTex(r, FloatID);
     }
 
-    public static void DrawSpeedyTex(Rect r, Func<float, float> f, float stretchFactor = 2f, float scaleCloserToOne = 0.5f)
+    public static void DrawSpeedyTex(Rect r, Func<float, float> f, float stretchFactor = 2f, float easeScaleCloserTo1 = 0.5f)
     {
-        var lscale = f(ScaleCloserToOne(TriangleWave(Stretch(Time.realtimeSinceStartup, stretchFactor)), scaleCloserToOne));
+        var lscale = f(ScaleCloserToOne(TriangleWave(Stretch(Time.realtimeSinceStartup, stretchFactor)), easeScaleCloserTo1));
         /*
         Debug.Log(string.Join("\n", new string[] {
             "input value: " + Time.realtimeSinceStartup,

@@ -78,6 +78,7 @@
     <Compile Include="Tags.cs" />
     <Compile Include="TemporaryInstructionScripts.cs" />
     <Compile Include="TextureLineGraph.cs" />
+    <Compile Include="TextureScale.cs" />
     <Compile Include="WhatHappenedScript.cs" />
     <Compile Include="WinLevelScript.cs" />
     <Compile Include="WinMovementScripts.cs" />

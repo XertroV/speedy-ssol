@@ -11,8 +11,7 @@ public class MenuComponentSelectSplits
 
     /* on a 1440p monitor */
     private static Vector2 scale = new Vector2(Screen.width / 2560f, Screen.height / 1440f);
-    public static float width = 800f * scale.x;
-    public static float height = 200f * scale.y;
+
     private static float arrowScale = 0.7f;
     public static Vector2 arrowDims = new Vector2(120 * arrowScale * scale.x, 200 * arrowScale * scale.y);
     private static float textYOffset = 20f * scale.y;
@@ -20,11 +19,26 @@ public class MenuComponentSelectSplits
     private Texture2D[] arrowLTexs = { new Texture2D(1, 1), new Texture2D(1, 1), new Texture2D(1, 1) };
     private Texture2D[] arrowRTexs = { new Texture2D(1, 1), new Texture2D(1, 1), new Texture2D(1, 1) };
 
+    private static float buttonScale = 1f;
+    private static Vector2 buttonDims = new Vector2(350 * buttonScale * scale.x, 50f * buttonScale * scale.y);
+    public GUIStyle buttonStyle;
+
+    private Texture2D[] buttonTexs = { new Texture2D(1, 1), new Texture2D(1, 1), new Texture2D(1, 1) };
+
     private List<Action<Route>> cbs = new List<Action<Route>>();
     private GUIContent topText;
     private Vector2 ttDims;
     private int routeListPos;
     private GUIStyle smallStyle;
+
+    public static float baseWidth = 800f;
+    public static float width = baseWidth * scale.x;
+    public static float baseHeight = 200f;
+    public static float height = baseHeight * scale.y;
+    public static float realHeight = (baseHeight + buttonDims.y) * scale.y;
+
+    private static float optionsMenuYPos = 1300f;
+    public static float OptionsMenuYPos { get => optionsMenuYPos; }
 
     public MenuComponentSelectSplits()
     {
@@ -36,14 +50,8 @@ public class MenuComponentSelectSplits
         splitsStyle.alignment = TextAnchor.MiddleCenter;
         smallStyle = new GUIStyle(splitsStyle);
         smallStyle.fontSize = (int)(24 * scale.y);
-        LoadSplitsFromLocalDir();
-        // temp store empty route here
-        SelectedRoute = new EmptyRoute();
-        routes.Add(SelectedRoute);
-        SelectFastestRoute();
-        routeListPos = routes.FindIndex(r => r == SelectedRoute);
-        TriggerCallbacks(SelectedRoute);
-        Debug.Log($"Loaded Routes: {routes}");
+
+        InitializeRoutes();
 
         this.arrowLTexs[0].LoadImage(File.ReadAllBytes(@"a-speedy-ssol_Data\Speedrun\arrow.png"));
         this.arrowLTexs[1].LoadImage(File.ReadAllBytes(@"a-speedy-ssol_Data\Speedrun\arrowHover.png"));
@@ -52,6 +60,31 @@ public class MenuComponentSelectSplits
         this.arrowRTexs[0] = FlipTexture(this.arrowLTexs[0]);
         this.arrowRTexs[1] = FlipTexture(this.arrowLTexs[1]);
         this.arrowRTexs[2] = FlipTexture(this.arrowLTexs[2]);
+
+        this.buttonTexs[0].LoadImage(File.ReadAllBytes(@"a-speedy-ssol_Data\Speedrun\button.png"));
+        this.buttonTexs[1].LoadImage(File.ReadAllBytes(@"a-speedy-ssol_Data\Speedrun\buttonHover.png"));
+        this.buttonTexs[2].LoadImage(File.ReadAllBytes(@"a-speedy-ssol_Data\Speedrun\buttonClick.png"));
+
+        foreach (var tex in buttonTexs)
+        {
+            TextureScale.Bilinear(tex, (int)buttonDims.x, (int)buttonDims.y);
+        }
+
+        buttonStyle = new GUIStyle();
+        buttonStyle.fontSize = (int)(25 * scale.y);
+        buttonStyle.normal.textColor = Color.white;
+        buttonStyle.hover.textColor = buttonStyle.normal.textColor;
+        buttonStyle.active.textColor = buttonStyle.normal.textColor;
+        buttonStyle.padding = new RectOffset(0, 0, 0, 0);
+        buttonStyle.margin = new RectOffset(0, 0, 0, 0);
+        buttonStyle.alignment = TextAnchor.MiddleCenter;
+        //buttonStyle.stretchHeight = true;
+        //buttonStyle.stretchWidth = true;
+        buttonStyle.wordWrap = true;
+        buttonStyle.normal.background = buttonTexs[0];
+        buttonStyle.hover.background = buttonTexs[1];
+        buttonStyle.active.background = buttonTexs[2];
+
 
         topText = new GUIContent("Choose Splits for Comparison");
         ttDims = this.splitsStyle.CalcSize(topText);
@@ -71,7 +104,7 @@ public class MenuComponentSelectSplits
     {
         smallStyle.font = splitsStyle.font;
 
-        GUI.BeginGroup(new Rect(x, y, width, height), splitsStyle);
+        GUI.BeginGroup(new Rect(x, y, width, realHeight), splitsStyle);
 
         // color and textures
         GUI.color = Color.white;
@@ -96,6 +129,12 @@ public class MenuComponentSelectSplits
             UpdateRouteUI(-1);
         }
 
+        // reload
+        if (GUI.Button(new Rect((width - buttonDims.x) / 2, arrowDims.y, buttonDims.x, buttonDims.y), "Reload From Disk", buttonStyle))
+        {
+            InitializeRoutes();
+        }
+
         // top text
         GUI.Label(new Rect((width - ttDims.x) / 2, textYOffset, ttDims.x, ttDims.y), topText, this.splitsStyle);
         GUI.Label(new Rect(0, (textYOffset + ttDims.y), width, ttDims.y), SelectedRoute.Name(), this.splitsStyle);
@@ -109,8 +148,9 @@ public class MenuComponentSelectSplits
 
     public void UpdateRouteUI(int moveSpots)
     {
-        routeListPos += moveSpots;
-        routeListPos = routeListPos < 0 ? 0 : routeListPos >= routes.Count ? routes.Count - 1 : routeListPos;
+        routeListPos += moveSpots + routes.Count;
+        routeListPos %= routes.Count;
+        // routeListPos = routeListPos < 0 ? 0 : routeListPos >= routes.Count ? routes.Count - 1 : routeListPos;
         SelectedRoute = routes[routeListPos];
         TriggerCallbacks(SelectedRoute);
     }
@@ -128,6 +168,18 @@ public class MenuComponentSelectSplits
         cbs.Add(cb);
     }
 
+    public void InitializeRoutes()
+    {
+        LoadSplitsFromLocalDir();
+        // temp store empty route here
+        SelectedRoute = new EmptyRoute();
+        routes.Add(SelectedRoute);
+        SelectFastestRoute();
+        routeListPos = routes.FindIndex(r => r == SelectedRoute);
+        TriggerCallbacks(SelectedRoute);
+        Debug.Log($"Loaded Routes: {routes}");
+    }
+
     public static string SplitsDir()
     {
         return Environment.CurrentDirectory + "\\splits";
@@ -135,6 +187,7 @@ public class MenuComponentSelectSplits
 
     private void LoadSplitsFromLocalDir()
     {
+        routes.RemoveAll((r) => true);
         var splitsDir = Environment.CurrentDirectory + "\\splits";
         var dirInfo = new DirectoryInfo(splitsDir);
         Debug.Log($"Loading splits from directory `{dirInfo}`.\n Files:\n - {string.Join("\n - ", MapToString(dirInfo.GetFiles()))}");

@@ -22,7 +22,7 @@ public class GUIScripts : MonoBehaviour
     private MenuScripts menuScripts;
     private MenuComponentSelectSplits selectSplits;
 
-    private static string version = "v0.1a";
+    private static string version = "v0.1b";
 
     // Token: 0x06000005 RID: 5 RVA: 0x000029E8 File Offset: 0x00000BE8
     private void Start()
@@ -130,6 +130,7 @@ public class GUIScripts : MonoBehaviour
 
         selectSplits.AddCallback(SetRouteTo);
         selectSplits.splitsStyle.font = myStyle.font;
+        this.routesMenuPos = this.ScaleVector(routesMenuPos);
 
         scaleStatic = new Vector2(Screen.width / 2560, Screen.height / 1440);
         fix16by10 = Math.Abs(Screen.width / Screen.height - 1.6f) < 0.04 ? new Vector2(-80 * scale.x, -80 * scale.y) : Vector2.zero;
@@ -600,8 +601,8 @@ public class GUIScripts : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().volume = this.volume;
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().saturated = this.saturated;
             }
-            this.selectSplits.DrawSelectSplitsFromMiddleCenter(Screen.width / 2, Screen.height * 0.1f);
-            GUIHelpers.DrawSpeedyTex(new Rect(50f * scale.x, 50f * scale.y, speedyTexWidth * scale.x, speedyTexWidth / 2 * scale.y), GUIHelpers.EaseOutElastic, scaleCloserToOne: 0.4f);
+            this.selectSplits.DrawSelectSplitsFromMiddleCenter(routesMenuPos.x, MenuComponentSelectSplits.OptionsMenuYPos * scale.y);
+            GUIHelpers.DrawSpeedyTex(new Rect(50f * scale.x, 50f * scale.y, speedyTexWidth * scale.x, speedyTexWidth / 2 * scale.y), GUIHelpers.EaseOutElastic, easeScaleCloserTo1: 0.4f);
 
             var controlsWidth = 700f * scale.x;
             GUI.BeginGroup(new Rect(50f * scale.x, speedyTexWidth / 2 * scale.y + 100 * scale.y, controlsWidth, Screen.height));
@@ -958,35 +959,28 @@ public class GUIScripts : MonoBehaviour
     // Token: 0x0400002B RID: 43
     private Vector2 scale = Vector2.zero;
 
-    // Token: 0x0400002C RID: 44
     public Texture2D[] resumeTextures;
-
-    // Token: 0x0400002D RID: 45
     public Texture2D[] menuTextures;
-
-    // Token: 0x0400002E RID: 46
     private Vector2 resumeTextureSize = new Vector2(212f, 83f);
-
-    // Token: 0x0400002F RID: 47
     private Vector2 menuTextureSize = new Vector2(303f, 85f);
 
-    // Token: 0x04000030 RID: 48
     private Vector2 resumeTexturePos = new Vector2(1541f, 980f);
+    //private Vector2 resumeTexturePos = new Vector2(1541f, 920f);
 
-    // Token: 0x04000031 RID: 49
     private Vector2 menuTexturePos = new Vector2(1493f, 1084f);
+    //private Vector2 menuTexturePos = new Vector2(1493f, 1024f);
 
-    // Token: 0x04000032 RID: 50
     public Texture2D[] checkBoxTextures;
 
-    // Token: 0x04000033 RID: 51
     private Vector2 checkBoxSize = new Vector2(110f, 110f);
 
-    // Token: 0x04000034 RID: 52
     private Vector2 saturatedPos = new Vector2(912f, 891f);
+    //private Vector2 saturatedPos = new Vector2(912f, 831f);
 
-    // Token: 0x04000035 RID: 53
     private Vector2 deSaturatedPos = new Vector2(1183f, 891f);
+    //private Vector2 deSaturatedPos = new Vector2(1183f, 831f);
+
+    private Vector2 routesMenuPos = new Vector2(2560f / 2, 1120f);
 
     // Token: 0x04000036 RID: 54
     public Texture2D sliderBox;

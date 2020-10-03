@@ -208,7 +208,7 @@ public class MenuScripts : MonoBehaviour
             }
             GUI.DrawTexture(new Rect(this.difference.x, this.difference.y, this.size.x, this.size.y), this.menuTexture);
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
-            GUIHelpers.DrawSpeedyTex(new Rect(1400 * scale.x, 25 * scale.y, 800 * scale.x, 400 * scale.y), GUIHelpers.EaseInOutBounce, scaleCloserToOne: 0.6f);
+            GUIHelpers.DrawSpeedyTex(new Rect(100f * scale.x, Screen.height - (400f + 100f) * scale.y, 800 * scale.x, 400 * scale.y), GUIHelpers.EaseInOutBounce, easeScaleCloserTo1: 0.6f);
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.startFadeValue);
             GUI.EndGroup();
             GUI.depth = 1;
@@ -319,8 +319,8 @@ public class MenuScripts : MonoBehaviour
             GUI.skin.label.fontSize = 50;
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
             //GUI.Label(new Rect(50, 50, Screen.width, Screen.height), new GUIContent("TEST LABEL -- this.options == true"));
-            this.selectSplits.DrawSelectSplitsFromMiddleCenter(Screen.width / 2, Screen.height * 0.1f);
-            GUIHelpers.DrawSpeedyTex(new Rect(50f * scale.x, 50f * scale.y, speedyTexWidth * scale.x, speedyTexWidth / 2 * scale.y), GUIHelpers.EaseOutBounce, scaleCloserToOne: 0.4f);
+            this.selectSplits.DrawSelectSplitsFromMiddleCenter(Screen.width / 2, MenuComponentSelectSplits.OptionsMenuYPos * scale.y);
+            GUIHelpers.DrawSpeedyTex(new Rect(50f * scale.x, 50f * scale.y, speedyTexWidth * scale.x, speedyTexWidth / 2 * scale.y), GUIHelpers.EaseOutBounce, easeScaleCloserTo1: 0.4f);
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.startFadeValue);
         }
         if (this.credits && this.mouseDown)
