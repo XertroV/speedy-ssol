@@ -16,13 +16,19 @@ public class GUIScripts : MonoBehaviour
     // This doens't seem to work. Not sure why.
     private Vector2 fix16by10;
 
-    private const float timerBoxWidth = 500f;
+    private const float timerBoxWidth = 600f;
     private const int maxTimerNameLen = 28;
 
     private MenuScripts menuScripts;
     private MenuComponentSelectSplits selectSplits;
 
     private static string version = "v0.1b";
+
+    private Color gold = new Color(1, 0.8f, 0);
+    private Color lightGreen = new Color(0.6f, 0.95f, 0.6f);
+    private Color lightRed = new Color(1, 0.8f, 0.8f);
+
+    private Resolution origResolution;
 
     // Token: 0x06000005 RID: 5 RVA: 0x000029E8 File Offset: 0x00000BE8
     private void Start()
@@ -233,6 +239,13 @@ public class GUIScripts : MonoBehaviour
                 GameObject.FindGameObjectWithTag("Player").GetComponent<GameState>().OrbPicked();
             }
         }*/
+        /*if (Input.GetKeyDown(KeyCode.F11))
+        {
+            if (Screen.currentResolution.width > 2000)
+                Screen.SetResolution(origResolution.width, origResolution.height, false);
+            else 
+                Screen.SetResolution(2560, 1440, true);
+        }*/
     }
 
     private void HandleTimingsOnExitResetWinEtc()
@@ -419,7 +432,8 @@ public class GUIScripts : MonoBehaviour
             GUI.skin.box.padding = new RectOffset(15, 15, 15, 0);
             GUI.skin.box.normal.background = this.bgTex[0];
             GUI.skin.box.fontSize = (int)this.fontSizes.y * 8 / 10;
-            GUI.skin.label.alignment = TextAnchor.MiddleLeft;
+            GUI.skin.box.alignment = TextAnchor.MiddleLeft;
+            //GUI.skin.label.alignment = TextAnchor.MiddleLeft;
             if (this.showTimer)
             {
                 string timeStr = this.state.TotalTimePlayer.ToString("Time: 000.000");
@@ -477,31 +491,42 @@ public class GUIScripts : MonoBehaviour
             GUI.skin.box.padding = scaledPadding;
             GUI.skin.box.fontSize = (int)fontSize;
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
-            Vector2 vecSplits = GUI.skin.box.CalcSize(new GUIContent("tst"));
+            Vector2 vecSplits = GUI.skin.box.CalcSize(new GUIContent("test"));
             float col2Offset = GUI.skin.label.CalcSize(new GUIContent("-000.000")).x * 16 / 10;
+            float colWidth = GUI.skin.label.CalcSize(new GUIContent("-000.000")).x;
+            float tbWidth = timerBoxWidth * localScale;
             if (this.showTimer)
             {
                 // timer and splits on right
-                float tbWidth = timerBoxWidth * localScale;
                 GUI.skin.box.fontSize = (int)(fontSize * 0.8);
                 GUI.skin.box.alignment = TextAnchor.MiddleRight;
+                // this covers full width
                 GUI.Box(new Rect((float)Screen.width - tbWidth, 0f, tbWidth, vecSplits.y), new GUIContent("Time"));
                 GUI.skin.box.normal.background = null;
-                GUI.Box(new Rect((float)Screen.width - col2Offset + vecSplits.x, 0f, vecSplits.x, vecSplits.y), new GUIContent("+/-"));
+                GUI.Box(new Rect((float)Screen.width - colWidth, 0f, vecSplits.x, vecSplits.y), new GUIContent("+/-"));
+                GUI.Box(new Rect((float)Screen.width - colWidth * 2, 0f, vecSplits.x, vecSplits.y), new GUIContent("Δ(s)"));
+                
                 GUI.skin.box.alignment = TextAnchor.MiddleLeft;
                 var name = this.selectSplits.SelectedRoute.Name();
                 var nameSize = GUI.skin.box.CalcSize(new GUIContent(name));
                 GUI.Box(new Rect((float)Screen.width - tbWidth, 0f, tbWidth, vecSplits.y), new GUIContent(name.Length > maxTimerNameLen ? name.Substring(0, maxTimerNameLen) + "..." : name));
                 GUI.skin.box.fontSize = (int)fontSize;
+
                 bool doneOnePreview = false;
+                var lastSplit = 0d;
+                var lastWrSplit = 0d;
+                var thisWrSplit = 0d;
                 for (int s = 0; s < this.splitOn.Length; s++)
                 {
+                    GUI.skin.box.alignment = TextAnchor.MiddleLeft;
+                    var sOrb = this.splitOn[s];
                     GUI.skin.box.normal.background = this.bgTex[s % 2];
-                    double tempTime = this.state.orbToSplit.ContainsKey(this.splitOn[s]) ? this.state.orbToSplit[this.splitOn[s]] : 0.0;
+                    double tempTime = this.state.orbToSplit.ContainsKey(sOrb) ? this.state.orbToSplit[sOrb] : 0.0;
                     GUI.Box(new Rect((float)Screen.width - tbWidth, vecSplits.y * (float)(s + 1), tbWidth, vecSplits.y), new GUIContent(this.splitNames[s]));
                     GUI.skin.box.normal.background = null;
                     string splitTime;
                     Color color = GUI.color;
+                    GUI.skin.label.alignment = TextAnchor.MiddleRight;
                     if (tempTime > 0.0 || !doneOnePreview)
                     {
                         if (tempTime == 0.0 && !doneOnePreview)
@@ -509,14 +534,23 @@ public class GUIScripts : MonoBehaviour
                             doneOnePreview = true;
                             tempTime = this.state.TotalTimePlayer;
                         }
+                        thisWrSplit = this.wrSplits[s];
                         splitTime = tempTime.ToString("F03");
                         vecSplits = GUI.skin.box.CalcSize(new GUIContent(splitTime));
                         float plusMinusSplitTime = (float)tempTime - this.wrSplits[s];
                         string pmSplit = ((plusMinusSplitTime < 0f) ? "" : "+") + plusMinusSplitTime.ToString("F02");
                         Vector2 vecPMSplit = GUI.skin.box.CalcSize(new GUIContent(pmSplit));
                         GUI.Label(new Rect((float)Screen.width - vecSplits.x, vecSplits.y * (float)(s + 1), vecSplits.x, vecSplits.y), splitTime);
+                        vecSplits = GUI.skin.box.CalcSize(new GUIContent(splitTime));
                         GUI.color = ((plusMinusSplitTime < 0f) ? Color.green : Color.red);
-                        GUI.Label(new Rect((float)Screen.width - col2Offset, vecSplits.y * (float)(s + 1), vecPMSplit.x, vecPMSplit.y), pmSplit);
+                        GUI.Label(new Rect((float)Screen.width - colWidth - vecPMSplit.x, vecPMSplit.y * (float)(s + 1), vecPMSplit.x, vecPMSplit.y), pmSplit);
+                        var wrDeltaSplit = thisWrSplit - lastWrSplit;
+                        var myDeltaSplit = tempTime - lastSplit;
+                        var fasterSplit = wrDeltaSplit > myDeltaSplit;
+                        string deltaSplit = myDeltaSplit.ToString("F02");
+                        vecSplits = GUI.skin.box.CalcSize(new GUIContent(deltaSplit));
+                        GUI.color = (fasterSplit ? lightGreen : lightRed);
+                        GUI.Label(new Rect((float)Screen.width - colWidth * 2 - vecSplits.x, vecSplits.y * (float)(s + 1), vecSplits.x, vecSplits.y), deltaSplit);
                     }
                     else
                     {
@@ -526,6 +560,9 @@ public class GUIScripts : MonoBehaviour
                         GUI.Label(new Rect((float)Screen.width - vecSplits.x, vecSplits.y * (float)(s + 1), vecSplits.x, vecSplits.y), splitTime);
                     }
                     GUI.color = color;
+
+                    lastSplit = tempTime;
+                    lastWrSplit = this.wrSplits[s];
                 }
             }
             GUI.color = Color.white;

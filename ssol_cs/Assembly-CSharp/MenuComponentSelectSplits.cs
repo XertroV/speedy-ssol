@@ -209,16 +209,22 @@ public class MenuComponentSelectSplits
         if (mySplitRoutes.Count > 0)
         {
             Route bestRoute = new EmptyRoute();
+            List<Route> myRoutes = new List<Route>();
             foreach (var myRoute in mySplitRoutes)
             {
                 Debug.Log($"testing route: {myRoute.Name()}");
-                if (myRoute.WinTime() < bestRoute.WinTime() && myRoute.IsWin())
+                if (myRoute.IsWin())
                 {
-                    Debug.Log($"Found new bestRoute (from my-splits): {myRoute.Name()}");
-                    bestRoute = myRoute;
-                } else
-                {
-                    Debug.Log($"Not bestRoute (from my-splits): {myRoute.Name()} with wintime: {myRoute.WinTime()}");
+                    myRoutes.Add(myRoute);
+                    if (myRoute.WinTime() < bestRoute.WinTime())
+                    {
+                        Debug.Log($"Found new bestRoute (from my-splits): {myRoute.Name()}");
+                        bestRoute = myRoute;
+                    }
+                    else
+                    {
+                        Debug.Log($"Not bestRoute (from my-splits): {myRoute.Name()} with wintime: {myRoute.WinTime()}");
+                    }
                 }
             }
             bestRoute.SetName("PB: " + bestRoute.Name());
