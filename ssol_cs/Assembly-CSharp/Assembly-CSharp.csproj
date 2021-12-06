@@ -41,7 +41,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\SSOL_PATCHED\A Slower Speed of Light_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\SSOL_SR\a-speedy-ssol_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

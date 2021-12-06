@@ -475,6 +475,8 @@ public class GameState : MonoBehaviour
         var win = this.GameWin;
         var time = this.TotalTimePlayer;
         var sFile = splitsOut + $"\\{ConvertToUnixTimestamp(now)}-{time.ToString("F02")}s-win={win}.txt";
+        // "2020-12" or "none"
+        var loadRoute = "2020-12";
         if (!Directory.Exists(splitsOut))
         {
             Directory.CreateDirectory(splitsOut);
@@ -487,6 +489,7 @@ public class GameState : MonoBehaviour
             file.WriteLine($";GameWin={this.GameWin}");
             file.WriteLine($";CurrPlayerTime={this.TotalTimePlayer}");
             file.WriteLine($";CurrWorldTime={this.TotalTimeWorld}");
+            file.WriteLine($"loadRoute={loadRoute}");
             file.WriteLine("splits:");
             foreach (var s in this.splits)
             {

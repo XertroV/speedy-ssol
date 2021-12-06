@@ -188,14 +188,42 @@ public class MenuComponentSelectSplits
     private void LoadSplitsFromLocalDir()
     {
         routes.RemoveAll((r) => true);
-        var splitsDir = Environment.CurrentDirectory + "\\splits";
+        var splitsDir = SplitsDir();
         var dirInfo = new DirectoryInfo(splitsDir);
         Debug.Log($"Loading splits from directory `{dirInfo}`.\n Files:\n - {string.Join("\n - ", MapToString(dirInfo.GetFiles()))}");
         foreach (var splitFile in dirInfo.GetFiles())
         {
             Debug.Log("adding file: " + splitFile);
-            routes.Add(new RouteFromFile(splitFile.FullName));
+            routes.Add(new RouteFromFile(splitFile.FullName, true));
             Debug.Log(routes.Count);
+        }
+
+        var mySplitRoutes = new List<Route>();
+        var mySplitsDir = SplitsDir() + "\\my-splits";
+        var mySpDirInfo = new DirectoryInfo(mySplitsDir);
+        foreach (var splitFile in mySpDirInfo.GetFiles())
+        {
+            Debug.Log("adding file: " + splitFile);
+            mySplitRoutes.Add(new RouteFromFile(splitFile.FullName, false));
+        }
+        if (mySplitRoutes.Count > 0)
+        {
+            Route bestRoute = new EmptyRoute();
+            foreach (var myRoute in mySplitRoutes)
+            {
+                Debug.Log($"testing route: {myRoute.Name()}");
+                if (myRoute.WinTime() < bestRoute.WinTime() && myRoute.IsWin())
+                {
+                    Debug.Log($"Found new bestRoute (from my-splits): {myRoute.Name()}");
+                    bestRoute = myRoute;
+                } else
+                {
+                    Debug.Log($"Not bestRoute (from my-splits): {myRoute.Name()} with wintime: {myRoute.WinTime()}");
+                }
+            }
+            bestRoute.SetName("PB: " + bestRoute.Name());
+            routes.Insert(0, bestRoute);
+            //routes.Add()
         }
     }
 

@@ -2,12 +2,19 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartAction>Program</StartAction>
-    <StartProgram>C:\Users\XertroV\aslowerspeedoflight\SSOL_PATCHED\a-speedy-ssol.exe</StartProgram>
+    <StartProgram>C:\Users\XertroV\src\SSOL_PATCHED\a-speedy-ssol.exe</StartProgram>
     <StartArguments>-window-height 2560 -window-width 1440 -window-fullscreen 0</StartArguments>
-    <StartWorkingDirectory>C:\Users\XertroV\aslowerspeedoflight\SSOL_PATCHED\</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\Users\XertroV\src\SSOL_PATCHED</StartWorkingDirectory>
+    <EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
   </PropertyGroup>
   <PropertyGroup>
     <ReferencePath>
     </ReferencePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\Users\XertroV\src\SSOL_PATCHED\a-speedy-ssol.exe</StartProgram>
+    <StartWorkingDirectory>C:\Users\XertroV\src\SSOL_PATCHED\</StartWorkingDirectory>
+    <EnableUnmanagedDebugging>true</EnableUnmanagedDebugging>
   </PropertyGroup>
 </Project>

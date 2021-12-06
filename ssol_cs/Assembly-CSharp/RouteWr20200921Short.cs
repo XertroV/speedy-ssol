@@ -60,4 +60,13 @@ internal class RouteWr20200921Short : Route
     {
         return this.splitOn;
     }
+
+    public override void SetName(string newName)
+    {
+        throw new NotImplementedException();
+    }
+    public override float WinTime()
+    {
+        return 999f;
+    }
 }

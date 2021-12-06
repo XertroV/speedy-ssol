@@ -12,6 +12,15 @@ public abstract class Route
 
     // Token: 0x0400017C RID: 380
     public abstract float[] BenchmarkSplits();
+
+    public abstract float WinTime();
+
+    public abstract void SetName(string newName);
+
+    public virtual bool IsWin()
+    {
+        return false;
+    }
 }
 
 class EmptyRoute : Route
@@ -33,5 +42,15 @@ class EmptyRoute : Route
     public override int[] SplitOn()
     {
         return new int[] { };
+    }
+
+    public override void SetName(string newName)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override float WinTime()
+    {
+        return 999f;
     }
 }
