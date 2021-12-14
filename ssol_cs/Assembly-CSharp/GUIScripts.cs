@@ -438,11 +438,18 @@ public class GUIScripts : MonoBehaviour
             {
                 string timeStr = this.state.TotalTimePlayer.ToString("Time: 000.000");
                 string speedStr = this.state.playerVelocity.ToString("Speed: 00.00");
-                Vector2 vecTimerDs = GUI.skin.box.CalcSize(new GUIContent("Time: 000.000"));
+                Vector2 vecTimerDs = GUI.skin.box.CalcSize(new GUIContent("Time12: 000.000"));
                 var maxSpeed = state.MaxSpeed * state.PctOfSpdUsing;
+                var meshSpeed = GameObject.FindGameObjectWithTag("Playermesh").GetComponent<Rigidbody>().velocity.magnitude;
+                var lastOrb = state.lastOrb;
                 GUI.Box(new Rect(0f, 0f, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(timeStr));
                 GUI.Box(new Rect(0f, vecTimerDs.y, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(speedStr));
                 GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(maxSpeed.ToString("MaxSpd: 00.00")));
+                //GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(meshSpeed.ToString("MeshSpd: 00.00")));
+                GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(lastOrb.ToString("LastOrb: 00.00")));
+                //var pv = this.state.PlayerVelocityVector;
+                //Vector2 t = new Vector2(pv.x, pv.z);
+                //GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(t.magnitude.ToString("VelMag: 00.00")));
                 //GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(this.curFPS.ToString("FPS: 000.000")));
 
                 var offsetFromSide = 60f;

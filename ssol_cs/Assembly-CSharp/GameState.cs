@@ -269,12 +269,15 @@ public class GameState : MonoBehaviour
     // Token: 0x06000028 RID: 40
     public void OrbPicked()
     {
-        this.orbCounter = 2f;
+        this.orbCounter = ORB_SPEED_DUR;
+        // ORB_SPEED_INC -- note: below is commented in case it has an appreciable impact on speedrunning
+        // this.pctOfSpdUsing += ORB_SPEED_INC;
         this.pctOfSpdUsing += 0.05000000074505806;
         if (this.pctOfSpdUsing > (double)this.finalMaxSpeed)
         {
             this.pctOfSpdUsing = (double)this.finalMaxSpeed;
         }
+        this.lastOrb = this.totalTimePlayer;
     }
 
     // Token: 0x06000029 RID: 41
@@ -320,7 +323,7 @@ public class GameState : MonoBehaviour
             Shader.SetGlobalVector("_playerOffset", new Vector4(this.playerTransform.position.x, this.playerTransform.position.y, this.playerTransform.position.z, 0f));
             if (this.orbCounter <= 0f && this.pctOfSpdUsing > 0.625 && !this.GameWin)
             {
-                this.pctOfSpdUsing -= (double)(0.6f * Time.deltaTime);
+                this.pctOfSpdUsing -= (double)(ORB_DECEL_RATE * Time.deltaTime);
                 if (this.pctOfSpdUsing < 0.625)
                 {
                     this.pctOfSpdUsing = 0.625;
@@ -345,6 +348,7 @@ public class GameState : MonoBehaviour
             }
             Shader.SetGlobalVector("_vpc", new Vector4(-this.playerVelocityVector.x, -this.playerVelocityVector.y, -this.playerVelocityVector.z, 0f) / (float)this.c);
             Shader.SetGlobalFloat("_wrldTime", (float)this.TotalTimeWorld);
+            // lorentz?
             this.sqrtOneMinusVSquaredCWDividedByCSquared = Math.Sqrt(1.0 - Math.Pow(this.playerVelocity, 2.0) / this.cSqrd);
             this.deltaTimePlayer = (double)Time.deltaTime;
             if (this.keyHit)
@@ -637,4 +641,6 @@ public class GameState : MonoBehaviour
 
     public List<int> orbCollectionList = new List<int>();
     public MenuComponentSelectSplits selectSplits;
+
+    public double lastOrb = 0f;
 }

@@ -42,8 +42,17 @@ public class MovementScripts : MonoBehaviour
             {
                 this.invertKeyDown = false;
             }
+            // NOTE: I reverse-engineered some of the logic to do some comments here and rename some vars -- forgetting that a lot of it is already in OpenRelativity -- check there before trying to read all this if you want to know what's going on.
             Vector3 playerVelocityVector = this.state.PlayerVelocityVector;
+            // what is this angle?
+            // dot: angle between player's velocity and Right
+            // divided by magnitude (normalized-ish)
+            // acos: get angle
+            // 57.29578f = 180/pi    => converts radians to degrees
+            // angle = angle between player and axis Right
             float angle = 57.29578f * Mathf.Acos(Vector3.Dot(playerVelocityVector, Vector3.right) / playerVelocityVector.magnitude);
+            // rotate angle degrees around cross of velocity and axis Right
+            // rotate -angle degrees around cross of velocity and axis Right
             Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.Cross(playerVelocityVector, Vector3.right).normalized);
             Quaternion rotation2 = Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.right, playerVelocityVector).normalized);
             if (playerVelocityVector.sqrMagnitude == 0f)
@@ -51,10 +60,13 @@ public class MovementScripts : MonoBehaviour
                 rotation = Quaternion.identity;
                 rotation2 = Quaternion.identity;
             }
-            Vector3 vector = Vector3.zero;
-            Quaternion rotation3 = Quaternion.AngleAxis(this.camTransform.eulerAngles.y, Vector3.up);
+            // Track acceleration input
+            Vector3 accelVector = Vector3.zero;
+            // rotate some degrees around y axis -- this is the rotation for the camera
+            Quaternion camRotation = Quaternion.AngleAxis(this.camTransform.eulerAngles.y, Vector3.up);
             float axis;
-            vector += new Vector3(0f, 0f, (axis = Input.GetAxis("Vertical")) * 20f * Time.deltaTime);
+            // Add to z axis accel
+            accelVector += new Vector3(0f, 0f, (axis = Input.GetAxis("Vertical")) * ACCEL_RATE * Time.deltaTime);
             if (axis != 0f)
             {
                 if (Mathf.Abs(playerVelocityVector.magnitude) < 0.1f)
@@ -64,7 +76,8 @@ public class MovementScripts : MonoBehaviour
                 this.state.keyHit = true;
                 this.audioScripts.slowDown = true;
             }
-            vector += new Vector3((axis = Input.GetAxis("Horizontal")) * 20f * Time.deltaTime, 0f, 0f);
+            // Add to x axis accel
+            accelVector += new Vector3((axis = Input.GetAxis("Horizontal")) * ACCEL_RATE * Time.deltaTime, 0f, 0f);
             if (axis != 0f)
             {
                 if (Mathf.Abs(playerVelocityVector.magnitude) < 0.1f)
@@ -74,25 +87,32 @@ public class MovementScripts : MonoBehaviour
                 this.state.keyHit = true;
                 this.audioScripts.slowDown = true;
             }
-            vector = rotation3 * vector;
-            if (vector.x == 0f)
+            // rotate accel vector by camera rotation
+            accelVector = camRotation * accelVector;
+            if (accelVector.x == 0f)
             {
-                vector += new Vector3(-2f * playerVelocityVector.x * Time.deltaTime, 0f, 0f);
+                accelVector += new Vector3(-SLOW_DOWN_RATE * playerVelocityVector.x * Time.deltaTime, 0f, 0f);
                 this.audioScripts.Decelerate();
             }
-            if (vector.z == 0f)
+            if (accelVector.z == 0f)
             {
-                vector += new Vector3(0f, 0f, -2f * playerVelocityVector.z * Time.deltaTime);
+                accelVector += new Vector3(0f, 0f, -SLOW_DOWN_RATE * playerVelocityVector.z * Time.deltaTime);
                 this.audioScripts.Decelerate();
             }
-            if (vector.sqrMagnitude != 0f)
+            // if the acceleration vector has a magnitude
+            // I think this entire block just handles speed of light stuff??
+            if (accelVector.sqrMagnitude != 0f)
             {
-                Vector3 vector2 = rotation * playerVelocityVector;
-                vector = rotation * vector;
+                // vector2 = rotate playerVelocity `angle` degrees around up/down
+                Vector3 vPlayerVel = rotation * playerVelocityVector;
+                // rotate accel vector `angle` degress around up/down
+                accelVector = rotation * accelVector;
+                // all velocity now in one direction????
+                //
                 float num = (float)this.state.SqrtOneMinusVSquaredCWDividedByCSquared;
-                vector2 = 1f / (1f + vector2.x * vector.x / (float)this.state.SpeedOfLightSqrd) * new Vector3(vector.x + vector2.x, vector.y * num, num * vector.z);
-                vector2 = rotation2 * vector2;
-                this.state.PlayerVelocityVector = vector2;
+                vPlayerVel = 1f / (1f + vPlayerVel.x * accelVector.x / (float)this.state.SpeedOfLightSqrd) * new Vector3(accelVector.x + vPlayerVel.x, accelVector.y * num, num * accelVector.z);
+                vPlayerVel = rotation2 * vPlayerVel;
+                this.state.PlayerVelocityVector = vPlayerVel;
             }
             if (this.speedOfLightTarget < 0)
             {
@@ -110,10 +130,10 @@ public class MovementScripts : MonoBehaviour
             {
                 this.state.SpeedOfLight = (double)this.speedOfLightTarget;
             }
-            float num2 = -Input.GetAxisRaw("Mouse X");
-            float num3 = (float)this.inverted * Input.GetAxisRaw("Mouse Y");
-            float y = -num2 * Time.deltaTime * this.rotSpeed * this.mouseSensitivity;
-            float num4 = num3 * Time.deltaTime * this.rotSpeed * this.mouseSensitivity;
+            float mouseX = -Input.GetAxisRaw("Mouse X");
+            float mouseY = (float)this.inverted * Input.GetAxisRaw("Mouse Y");
+            float y = -mouseX * Time.deltaTime * this.rotSpeed * this.mouseSensitivity;
+            float num4 = mouseY * Time.deltaTime * this.rotSpeed * this.mouseSensitivity;
             if (this.frames > 5)
             {
                 this.camTransform.Rotate(new Vector3(0f, y, 0f), Space.World);
@@ -135,6 +155,7 @@ public class MovementScripts : MonoBehaviour
                 Camera.main.layerCullSpherical = true;
                 Camera.main.useOcclusionCulling = false;
             }
+            //Debug.Log($"Camera FOV: {Camera.main.fieldOfView}");
             if ((double)this.speedOfLightTarget == this.state.MaxSpeed && !this.state.GameWin)
             {
                 this.state.GameWin = true;
@@ -154,7 +175,7 @@ public class MovementScripts : MonoBehaviour
             this.speedOfLightTarget = (int)this.maxSpeed;
         }
         this.tStep++;
-        this.speedOfLightStep = Mathf.Abs((float)(this.state.SpeedOfLight - (double)this.speedOfLightTarget) / 20f);
+        this.speedOfLightStep = Mathf.Abs((float)(this.state.SpeedOfLight - (double)this.speedOfLightTarget) / ACCEL_RATE);
     }
 
     // Token: 0x040000C4 RID: 196

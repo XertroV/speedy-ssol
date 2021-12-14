@@ -9,7 +9,9 @@ public class CollisionScripts : MonoBehaviour
 	{
 		if (base.gameObject.tag == "Playermesh")
 		{
-			GameObject.FindGameObjectWithTag("Player").GetComponent<GameState>().PlayerVelocityVector *= 1f - (float)(0.98 * (double)Time.deltaTime);
+			var state = GameObject.FindGameObjectWithTag("Player").GetComponent<GameState>();
+			state.PlayerVelocityVector *= 1f - (float)(0.98 * (double)Time.deltaTime);
+			//Debug.Log($"Collision at {state.TotalTimePlayer}");
 		}
 	}
 
