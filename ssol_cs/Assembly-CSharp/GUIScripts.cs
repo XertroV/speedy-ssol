@@ -23,7 +23,7 @@ public class GUIScripts : MonoBehaviour
     private MenuScripts menuScripts;
     private MenuComponentSelectSplits selectSplits;
 
-    private static string version = "v0.1.1";
+    private static string version = "v0.1.1-pre";
 
     private Color gold = new Color(1, 0.8f, 0);
     private Color lightGreen = new Color(0.6f, 0.95f, 0.6f);
