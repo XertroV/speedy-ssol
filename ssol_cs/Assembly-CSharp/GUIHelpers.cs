@@ -10,11 +10,17 @@ public class GUIHelpers
     public static Font plainFont = fonts[0];
     public static Font ssolFont = fonts[1];*/
     public static Font arial = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-    public static Font amigoStd = Resources.GetBuiltinResource(typeof(Font), "AmigoStd.ttf") as Font;
+    public static Font getAmigoStd()
+    {
+        throw new NotImplementedException();
+        return (UnityEngine.Resources.LoadAssetAtPath("Assets/Font/AmigoStd.otf", typeof(Font))) as Font;
+    }
 
     public GUIStyle controlsStyle = null;
 
     public static Vector2 SpeedyTexDimensions { get => new Vector2(speedyTex.width, speedyTex.height); }
+
+    
 
     private static string controls = string.Join("\n", new string[] {
         "## In-Game Controlls ##",
@@ -40,7 +46,6 @@ public class GUIHelpers
             controlsStyle.alignment = TextAnchor.MiddleLeft;
         }
         DrawOutline(new Rect(0, 0, width, Screen.height), new GUIContent(controls), controlsStyle, Color.black);
-        //GUI.skin.label = origStyle;
     }
 
     public static Texture2D LoadTextureFromPng(string filepath)

@@ -35,6 +35,11 @@ public class GUIScripts : MonoBehaviour
 
     public readonly GUIHelpers guiHelpers = new GUIHelpers();
 
+    private Font getAmigoStd()
+    {
+        return myStyle.font;
+    }
+
     // Token: 0x06000005 RID: 5 RVA: 0x000029E8 File Offset: 0x00000BE8
     private void Start()
     {
@@ -456,14 +461,17 @@ public class GUIScripts : MonoBehaviour
             style.fontSize = (int)this.fontSizes.y * 5 / 10;
             style.padding = new RectOffset(4, 0, 2, 0);
             style.font = GUIHelpers.arial;
+            style.wordWrap = false;
             var modLabel = new GUIContent($"Speedy mod, {version}");
             var modLabelSize = style.CalcSize(modLabel);
             GUIHelpers.DrawOutline(new Rect(0, Screen.height - modLabelSize.y, modLabelSize.x, modLabelSize.y), modLabel, style, Color.black);
             
-            GUI.skin.box.padding = new RectOffset(10, 10, 5, 0);
+            GUI.skin.box.padding = new RectOffset(10, 10, 10, -2);
             GUI.skin.box.normal.background = this.bgTex[0];
             GUI.skin.box.fontSize = (int)this.fontSizes.y * 8 / 10;
             GUI.skin.box.alignment = TextAnchor.MiddleLeft;
+            GUI.skin.box.font = myStyle.font;
+            GUI.skin.box.fontStyle = FontStyle.Normal;
             //GUI.skin.label.alignment = TextAnchor.MiddleLeft;
             if (this.showTimer)
             {
@@ -504,7 +512,7 @@ public class GUIScripts : MonoBehaviour
                     timerContents.AddRange(new List<GUIContent>() { debugPosContent, debugDirContent, });  // debugMeshSpeedContent
 
                 ExtMethods.Each(timerContents, iv => {
-                    GUI.Box(new Rect(0f, vecTimerDs.y * iv.ix, vecTimerDs.x + 10f, vecTimerDs.y), iv.val);
+                    GUI.Box(new Rect(0f, vecTimerDs.y * iv.ix, vecTimerDs.x + 10f, vecTimerDs.y), iv.val, GUI.skin.box);
                 });
 
                 //var pv = this.state.PlayerVelocityVector;
@@ -534,12 +542,14 @@ public class GUIScripts : MonoBehaviour
                 // DrawVelocityArrow();
             }
 
+            var boxStyle = new GUIStyle(GUI.skin.box);
+            var labelStyle = new GUIStyle(GUI.skin.label);
             GUI.skin.box = new GUIStyle(this.myStyle);
             GUI.skin.box.normal.background = this.bgTex[1];
             GUI.skin.label = new GUIStyle(this.myStyle);
             float fontSize = this.fontSizes.y / 1.75f;
             int p = 10;
-            RectOffset scaledPadding = new RectOffset(p, p, p, 0);
+            RectOffset scaledPadding = new RectOffset(p, p, p/3, p/3);
             GUI.skin.box.padding = scaledPadding;
             GUI.skin.box.fontSize = (int)fontSize;
             Vector2 testSize = GUI.skin.box.CalcSize(new GUIContent("test"));
@@ -551,10 +561,13 @@ public class GUIScripts : MonoBehaviour
                 localScale = maxY / currY;
                 fontSize *= localScale;
                 p = (int)((float)p * localScale);
-                scaledPadding = new RectOffset(p, p, p, 0);
+                scaledPadding = new RectOffset(p, p, p/3, p/3);
             }
             GUI.skin.label.padding = scaledPadding;
             GUI.skin.label.fontSize = (int)fontSize;
+            GUI.skin.label.fontStyle = FontStyle.Bold;
+            GUI.skin.label.font = GUIHelpers.arial;
+            GUI.skin.box.font = GUIHelpers.arial;
             GUI.skin.box.padding = scaledPadding;
             GUI.skin.box.fontSize = (int)fontSize;
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
@@ -571,8 +584,8 @@ public class GUIScripts : MonoBehaviour
                 GUI.Box(new Rect((float)Screen.width - tbWidth, 0f, tbWidth, vecSplits.y), "Time");
                 GUI.skin.box.normal.background = null;
                 GUI.skin.box.alignment = TextAnchor.MiddleRight;
-                GUI.Box(new Rect((float)Screen.width - colWidth * 2.1f, 0f, vecSplits.x, vecSplits.y), "+/-");
-                GUI.Box(new Rect((float)Screen.width - colWidth * 3.1f, 0f, vecSplits.x, vecSplits.y), "Δ(s)");
+                GUI.Box(new Rect((float)Screen.width - colWidth * 2.3f, 0f, vecSplits.x, vecSplits.y), "+/-");
+                GUI.Box(new Rect((float)Screen.width - colWidth * 3.3f, 0f, vecSplits.x, vecSplits.y), "Δ(s)");
                 
                 GUI.skin.box.alignment = TextAnchor.MiddleLeft;
                 var name = this.selectSplits.SelectedRoute.Name();
@@ -633,6 +646,10 @@ public class GUIScripts : MonoBehaviour
                     lastWrSplit = this.wrSplits[s];
                 }
             }
+
+            GUI.skin.box = boxStyle;
+            GUI.skin.label = labelStyle;
+
             GUI.color = Color.white;
             GUI.skin.box.fontSize = (int)(this.fontSizes.y * 0.5f);
             GUI.skin.box.normal.background = this.bgTex[1];
@@ -657,6 +674,8 @@ public class GUIScripts : MonoBehaviour
             GUI.EndGroup();
             DrawKeyboard(orbsDisplayWidth);
             GUI.skin.label.fontSize = (int)(this.fontSizes.y * 1f);
+            GUI.skin.label.font = myStyle.font;
+            GUI.skin.box.font = myStyle.font;
         }
         else
         {
