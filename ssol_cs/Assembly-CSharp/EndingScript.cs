@@ -157,7 +157,7 @@ public class EndingScript : MonoBehaviour
             GUI.skin.button.active.background = this.mainTextures[0];
             if (GUI.Button(new Rect(1194f * this.scale.x, 1170f * this.scale.y, this.mainTextureSize.x * this.scale.x, this.mainTextureSize.y * this.scale.y), string.Empty))
             {
-                Debug.Log("load level 1 -- EndingScript.OnGUI/1");
+                Debug.Log("load level 1 -- EndingScript.OnGUI/1 -- menu?");
                 Application.LoadLevel(1);
             }
             GUI.skin.button.normal.background = this.whatTextures[0];

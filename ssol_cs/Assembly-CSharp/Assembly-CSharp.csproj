@@ -52,6 +52,7 @@
     <Compile Include="CollisionScripts.cs" />
     <Compile Include="ColorCorrectionEffect.cs" />
     <Compile Include="EndingScript.cs" />
+    <Compile Include="ExtMethods.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="GUIHelpers.cs" />
     <Compile Include="GUIScripts.cs" />

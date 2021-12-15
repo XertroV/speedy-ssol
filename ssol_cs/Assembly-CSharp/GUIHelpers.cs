@@ -6,28 +6,41 @@ using UnityEngine;
 public class GUIHelpers
 {
     private static Texture2D speedyTex = LoadTextureFromPng(@"a-speedy-ssol_Data\Speedrun\speedy.png");
+    /*public static Font[] fonts = ;
+    public static Font plainFont = fonts[0];
+    public static Font ssolFont = fonts[1];*/
+    public static Font arial = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+    public static Font amigoStd = Resources.GetBuiltinResource(typeof(Font), "AmigoStd.ttf") as Font;
+
+    public GUIStyle controlsStyle = null;
 
     public static Vector2 SpeedyTexDimensions { get => new Vector2(speedyTex.width, speedyTex.height); }
 
     private static string controls = string.Join("\n", new string[] {
         "## In-Game Controlls ##",
         "[ and ] -- Change splits in-game",
-        "(backspace) -- Start over, reset timers",
+        "(Backspace) -- Start over, reset timers",
         "T -- Toggle timers showing",
         "O -- Toggle orbs showing",
+        "P -- Toggle debug position / rotation info",
+        "\\ + (End) -- Instant win (for testing)",
         "F4 -- Quit",
         "",
         "Add custom splits to the 'splits' folder (copy an existing one as a template). You need to make sure the orb numbers are correct and the file is correctly formatted."
     });
 
-    public static void DrawControlsInfo(float width)
+    public void DrawControlsInfo(float width)
     {
-        var origStyle = new GUIStyle(GUI.skin.label);
-        GUI.skin.label.wordWrap = true;
-        GUI.skin.label.richText = true;
-        DrawOutline(new Rect(0, 0, width, Screen.height), new GUIContent(controls), GUI.skin.label, Color.black);
-        //GUI.Label(new Rect(0, 0, width, Screen.height), controls);
-        GUI.skin.label = origStyle;
+        if (controlsStyle == null)
+        {
+            controlsStyle = new GUIStyle(GUI.skin.label);
+            controlsStyle.wordWrap = true;
+            controlsStyle.richText = true;
+            controlsStyle.font = arial;
+            controlsStyle.alignment = TextAnchor.MiddleLeft;
+        }
+        DrawOutline(new Rect(0, 0, width, Screen.height), new GUIContent(controls), controlsStyle, Color.black);
+        //GUI.skin.label = origStyle;
     }
 
     public static Texture2D LoadTextureFromPng(string filepath)

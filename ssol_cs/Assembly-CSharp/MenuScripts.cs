@@ -64,6 +64,8 @@ public class MenuScripts : MonoBehaviour
     private bool skipMenuOnFirstLoad = false;
     private const bool skipIntroSlides = true;
 
+    private GUIHelpers guiHelpers = new GUIHelpers();
+
     // Token: 0x0600003B RID: 59 RVA: 0x00006090 File Offset: 0x00004290
     private void Start()
     {
@@ -157,9 +159,12 @@ public class MenuScripts : MonoBehaviour
         }
         if (this.fadeOut && this.alphaFadeValue <= 0f)
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) || skipIntroSlides)
+            var aShiftKey = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            // don't skip if both aShiftKey and skipIntroSlides are true.
+            var shouldSkip = (aShiftKey || skipIntroSlides) && !(aShiftKey && skipIntroSlides);
+            if (shouldSkip)
             {
-                Debug.Log("loading level 3 b/c shift key being pressed - MenuScripts.Update");
+                Debug.Log("loading level 3 b/c shift key being pressed (or skip intro slides = true) - MenuScripts.Update");
                 GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().fadeOut = true;
                 Application.LoadLevel(3);
             }
@@ -260,7 +265,7 @@ public class MenuScripts : MonoBehaviour
             }
             GUI.BeginGroup(new Rect(50f * scale.x, 50 * scale.y, 800f * scale.x, Screen.height));
             GUI.skin.label.fontSize = (int)(30 * scale.y);
-            GUIHelpers.DrawControlsInfo(800f * scale.x);
+            guiHelpers.DrawControlsInfo(800f * scale.x);
             GUI.EndGroup();
             GUI.skin.label.fontSize = 50;
             //GUI.Label(new Rect(50, 50, Screen.width, Screen.height), new GUIContent("TEST LABEL -- this.options == false"));

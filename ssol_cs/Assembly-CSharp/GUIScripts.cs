@@ -31,6 +31,10 @@ public class GUIScripts : MonoBehaviour
 
     private Resolution origResolution;
 
+    private List<GUIContent> timerContents = new List<GUIContent>();
+
+    public readonly GUIHelpers guiHelpers = new GUIHelpers();
+
     // Token: 0x06000005 RID: 5 RVA: 0x000029E8 File Offset: 0x00000BE8
     private void Start()
     {
@@ -210,6 +214,10 @@ public class GUIScripts : MonoBehaviour
         {
             this.showVelocityGraph = !this.showVelocityGraph;
         }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            this.showDebugPositionRotEtc = !this.showDebugPositionRotEtc;
+        }
         if (Input.GetKeyDown(KeyCode.Backspace) && this.loadFadeValue < 1f && this.resetAfterTimeIs <= this.state.TotalTimePlayer)
         {
             this.HandleTimingsOnExitResetWinEtc();
@@ -220,7 +228,7 @@ public class GUIScripts : MonoBehaviour
         if (this.resetAfterTimeIs > this.state.TotalTimePlayer && this.resetAfterTimeIs != 0.0)
         {
             this.resetAfterTimeIs = 0;
-            Debug.Log("load level 3 -- GUIScripts.Update-Reset/1");
+            Debug.Log("load level 3 (game) -- GUIScripts.Update-Reset/1");
             GameObject.FindGameObjectWithTag("Audio").GetComponent<MyUnitySingleton>().fadeOut = true;
             Application.LoadLevel(3);
         }
@@ -443,13 +451,16 @@ public class GUIScripts : MonoBehaviour
             }
             GUI.BeginGroup(new Rect(0f, 0f, (float)Screen.width, (float)Screen.height));
 
-            GUI.skin.label.alignment = TextAnchor.LowerLeft;
-            GUI.skin.label.fontSize = (int)this.fontSizes.y * 4 / 10;
+            var style = new GUIStyle(GUI.skin.label);
+            style.alignment = TextAnchor.LowerLeft;
+            style.fontSize = (int)this.fontSizes.y * 5 / 10;
+            style.padding = new RectOffset(4, 0, 2, 0);
+            style.font = GUIHelpers.arial;
             var modLabel = new GUIContent($"Speedy mod, {version}");
-            var modLabelSize = GUI.skin.label.CalcSize(modLabel);
-            GUIHelpers.DrawOutline(new Rect(0, Screen.height - modLabelSize.y, modLabelSize.x, modLabelSize.y), modLabel, GUI.skin.label, Color.black);
-
-            GUI.skin.box.padding = new RectOffset(15, 15, 15, 0);
+            var modLabelSize = style.CalcSize(modLabel);
+            GUIHelpers.DrawOutline(new Rect(0, Screen.height - modLabelSize.y, modLabelSize.x, modLabelSize.y), modLabel, style, Color.black);
+            
+            GUI.skin.box.padding = new RectOffset(10, 10, 5, 0);
             GUI.skin.box.normal.background = this.bgTex[0];
             GUI.skin.box.fontSize = (int)this.fontSizes.y * 8 / 10;
             GUI.skin.box.alignment = TextAnchor.MiddleLeft;
@@ -465,29 +476,37 @@ public class GUIScripts : MonoBehaviour
                  * 
                  */
 
+                Vector2 vecTimerDs = GUI.skin.box.CalcSize(new GUIContent("Orb @ 000.00 s | 99"));
                 string timeStr = this.state.TotalTimePlayer.ToString("Time: 000.000");
                 string speedStr = this.state.playerVelocity.ToString("Speed: 00.00");
-                Vector2 vecTimerDs = GUI.skin.box.CalcSize(new GUIContent("Time12: 000.000"));
                 var maxSpeed = state.MaxSpeed * state.PctOfSpdUsing;
                 var playerMesh = GameObject.FindGameObjectWithTag("Playermesh").GetComponent<Rigidbody>();
                 var player = GameObject.FindGameObjectWithTag("Player").GetComponent<Rigidbody>();
                 var meshSpeed = playerMesh.velocity.magnitude;
                 var pPos = playerMesh.position;
-                //var pDir = player.rotation;
-                //var pDir = state.camera.rigidbody.rotation;
                 var camRot = Quaternion.AngleAxis(Camera.main.transform.eulerAngles.y, Vector3.up);
                 var pDirA = camRot.y;
                 var pDirB = camRot.w;
                 //var pDirC = camRot.z;  // zero
                 //var pDirD = camRot.x;  // zero
-                
-                GUI.Box(new Rect(0f, 0f, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(timeStr));
-                GUI.Box(new Rect(0f, vecTimerDs.y, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(speedStr));
-                GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(maxSpeed.ToString("MaxSpd: 00.00")));
-                //GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(meshSpeed.ToString("MeshSpd: 00.00")));
-                GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(state.lastOrbTime.ToString("Orb: 00.00 s") + $" | {state.lastOrbIx}"));
-                GUI.Box(new Rect(0f, vecTimerDs.y * 4, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent($"Pos: {pPos.x:F2},{pPos.z:F2}"));
-                GUI.Box(new Rect(0f, vecTimerDs.y * 5, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent($"Dir: {pDirA:F3},{pDirB:F3}"));
+
+                timerContents.Clear();
+                var timerContent = new GUIContent(timeStr);
+                var speedContent = new GUIContent(speedStr);
+                var maxSpeedContent = new GUIContent(maxSpeed.ToString("MaxSpd: 00.00"));
+                var lastOrbContent = new GUIContent($"{state.lastOrbTime.ToString("Orb @ 00.00 s")} | {state.lastOrbIx}");
+                var debugPosContent = new GUIContent($"Pos: {pPos.x:F2},{pPos.z:F2}");
+                var debugDirContent = new GUIContent($"Dir: {pDirA:F3},{pDirB:F3}");
+                var debugMeshSpeedContent = new GUIContent(meshSpeed.ToString("MeshV: 00.00"));
+
+                timerContents.AddRange(new List<GUIContent> {timerContent, speedContent, maxSpeedContent, lastOrbContent});
+                if (showDebugPositionRotEtc)
+                    timerContents.AddRange(new List<GUIContent>() { debugPosContent, debugDirContent, });  // debugMeshSpeedContent
+
+                ExtMethods.Each(timerContents, iv => {
+                    GUI.Box(new Rect(0f, vecTimerDs.y * iv.ix, vecTimerDs.x + 10f, vecTimerDs.y), iv.val);
+                });
+
                 //var pv = this.state.PlayerVelocityVector;
                 //Vector2 t = new Vector2(pv.x, pv.z);
                 //GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(t.magnitude.ToString("VelMag: 00.00")));
@@ -539,7 +558,7 @@ public class GUIScripts : MonoBehaviour
             GUI.skin.box.padding = scaledPadding;
             GUI.skin.box.fontSize = (int)fontSize;
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f);
-            Vector2 vecSplits = GUI.skin.box.CalcSize(new GUIContent("test"));
+            Vector2 vecSplits = GUI.skin.box.CalcSize(new GUIContent("replace later"));
             float col2Offset = GUI.skin.label.CalcSize(new GUIContent("-000.000")).x * 16 / 10;
             float colWidth = GUI.skin.label.CalcSize(new GUIContent("-000.000")).x;
             float tbWidth = timerBoxWidth * localScale;
@@ -549,10 +568,11 @@ public class GUIScripts : MonoBehaviour
                 GUI.skin.box.fontSize = (int)(fontSize * 0.8);
                 GUI.skin.box.alignment = TextAnchor.MiddleRight;
                 // this covers full width
-                GUI.Box(new Rect((float)Screen.width - tbWidth, 0f, tbWidth, vecSplits.y), new GUIContent("Time"));
+                GUI.Box(new Rect((float)Screen.width - tbWidth, 0f, tbWidth, vecSplits.y), "Time");
                 GUI.skin.box.normal.background = null;
-                GUI.Box(new Rect((float)Screen.width - colWidth, 0f, vecSplits.x, vecSplits.y), new GUIContent("+/-"));
-                GUI.Box(new Rect((float)Screen.width - colWidth * 2, 0f, vecSplits.x, vecSplits.y), new GUIContent("Δ(s)"));
+                GUI.skin.box.alignment = TextAnchor.MiddleRight;
+                GUI.Box(new Rect((float)Screen.width - colWidth * 2.1f, 0f, vecSplits.x, vecSplits.y), "+/-");
+                GUI.Box(new Rect((float)Screen.width - colWidth * 3.1f, 0f, vecSplits.x, vecSplits.y), "Δ(s)");
                 
                 GUI.skin.box.alignment = TextAnchor.MiddleLeft;
                 var name = this.selectSplits.SelectedRoute.Name();
@@ -692,7 +712,7 @@ public class GUIScripts : MonoBehaviour
             var controlsWidth = 700f * scale.x;
             GUI.BeginGroup(new Rect(50f * scale.x, speedyTexWidth / 2 * scale.y + 100 * scale.y, controlsWidth, Screen.height));
             GUI.skin.label.fontSize = (int)(30 * scale.y);
-            GUIHelpers.DrawControlsInfo(controlsWidth);
+            guiHelpers.DrawControlsInfo(controlsWidth);
             GUI.EndGroup();
         }
         if (this.unset && this.frames > 5)
