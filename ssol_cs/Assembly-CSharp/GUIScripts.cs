@@ -729,7 +729,7 @@ public class GUIScripts : MonoBehaviour
             GUIHelpers.DrawSpeedyTex(new Rect(50f * scale.x, 50f * scale.y, speedyTexWidth * scale.x, speedyTexWidth / 2 * scale.y), GUIHelpers.EaseOutElastic, easeScaleCloserTo1: 0.4f);
 
             var controlsWidth = 700f * scale.x;
-            GUI.BeginGroup(new Rect(50f * scale.x, speedyTexWidth / 2 * scale.y + 100 * scale.y, controlsWidth, Screen.height));
+            GUI.BeginGroup(new Rect(50f * scale.x, speedyTexWidth / 2 * scale.y + 50 * scale.y, controlsWidth, Screen.height));
             GUI.skin.label.fontSize = (int)(30 * scale.y);
             guiHelpers.DrawControlsInfo(controlsWidth);
             GUI.EndGroup();

@@ -31,7 +31,7 @@ public class MenuComponentSelectSplits
     private int routeListPos;
     private GUIStyle smallStyle;
 
-    public static float baseWidth = 800f;
+    public static float baseWidth = 1000f;
     public static float width = baseWidth * scale.x;
     public static float baseHeight = 200f;
     public static float height = baseHeight * scale.y;
@@ -197,6 +197,7 @@ public class MenuComponentSelectSplits
             routes.Add(new RouteFromFile(splitFile.FullName, true));
             Debug.Log(routes.Count);
         }
+        routes.Sort((a, b) => (int)((a.WinTime() - b.WinTime())*10000f));
 
         var mySplitRoutes = new List<Route>();
         var mySplitsDir = SplitsDir() + "\\my-splits";
@@ -227,7 +228,7 @@ public class MenuComponentSelectSplits
                     }
                 }
             }
-            bestRoute.SetName("PB: " + bestRoute.Name());
+            bestRoute.SetName($"PB ({bestRoute.WinTime():F1}s): " + bestRoute.Name());
             routes.Insert(0, bestRoute);
             //routes.Add()
         }
