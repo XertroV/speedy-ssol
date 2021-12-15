@@ -187,6 +187,12 @@ public class GUIScripts : MonoBehaviour
                 this.loading = false;
             }
         }
+        // auto-win condition for testing -- so you need to hold two keys down.
+        if (Input.GetKey(KeyCode.End) && Input.GetKey(KeyCode.Backslash))
+        {
+            this.state.Cheated = true;
+            this.state.GameWin = true;
+        }
         if (Input.GetKeyDown(KeyCode.T))
         {
             this.showTimer = !this.showTimer;
@@ -291,6 +297,7 @@ public class GUIScripts : MonoBehaviour
             if (this.state.GameWin)
             {
                 this.alphaFadeValue += Mathf.Clamp01(Time.deltaTime / 10f);
+                // this fades out the glow around orbs
                 this.orbFadeValue -= Mathf.Clamp01(Time.deltaTime / 5f);
                 GUI.depth = 0;
                 GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, 1f - this.alphaFadeValue);
@@ -303,10 +310,22 @@ public class GUIScripts : MonoBehaviour
                 {
                     GUI.skin.label.fontSize = (int)this.fontSizes.x;
                     Vector2 vector = GUI.skin.label.CalcSize(new GUIContent(this.times[0]));
-                    GUI.Label(new Rect((float)Screen.width * 0.5f - vector.x / 2f, 100f * this.scale.y, vector.x, 100f), this.times[0]);
+                    GUI.Label(new Rect((float)Screen.width * 0.5f - vector.x / 2f, 100f * this.scale.y, vector.x, vector.y), this.times[0]);
                     GUI.skin.label.fontSize = (int)this.fontSizes.y;
                     vector = GUI.skin.label.CalcSize(new GUIContent("All orbs collected!"));
-                    GUI.Label(new Rect((float)Screen.width * 0.5f - vector.x / 2f, 50f * this.scale.y, vector.x, 50f), "All orbs collected!");
+                    GUI.Label(new Rect((float)Screen.width * 0.5f - vector.x / 2f, 50f * this.scale.y, vector.x, vector.y), "All orbs collected!");
+                    if (state.Cheated)
+                    {
+                        var alignment = GUI.skin.label.alignment;
+                        GUI.skin.label.fontSize = (int)(this.fontSizes.x * 3f);
+                        GUI.skin.label.wordWrap = true;
+                        GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                        var content = new GUIContent($"TESTING\nOR\nCHEATED");
+                        vector = GUI.skin.label.CalcSize(content);
+                        GUI.Label(new Rect((float)Screen.width * 0.5f - vector.x / 2f, Screen.height * 0.5f - vector.y / 2f, vector.x, vector.y), content);
+                        GUI.skin.label.wordWrap = false;
+                        GUI.skin.label.alignment = alignment;
+                    }
                 }
                 GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, this.alphaFadeValue);
             }
@@ -436,17 +455,38 @@ public class GUIScripts : MonoBehaviour
             //GUI.skin.label.alignment = TextAnchor.MiddleLeft;
             if (this.showTimer)
             {
+                /*
+                 * 
+                 * 
+                 * TIMER ON SCREEN IN TOP LEFT
+                 * 
+                 * 
+                 * 
+                 */
+
                 string timeStr = this.state.TotalTimePlayer.ToString("Time: 000.000");
                 string speedStr = this.state.playerVelocity.ToString("Speed: 00.00");
                 Vector2 vecTimerDs = GUI.skin.box.CalcSize(new GUIContent("Time12: 000.000"));
                 var maxSpeed = state.MaxSpeed * state.PctOfSpdUsing;
-                var meshSpeed = GameObject.FindGameObjectWithTag("Playermesh").GetComponent<Rigidbody>().velocity.magnitude;
-                var lastOrb = state.lastOrb;
+                var playerMesh = GameObject.FindGameObjectWithTag("Playermesh").GetComponent<Rigidbody>();
+                var player = GameObject.FindGameObjectWithTag("Player").GetComponent<Rigidbody>();
+                var meshSpeed = playerMesh.velocity.magnitude;
+                var pPos = playerMesh.position;
+                //var pDir = player.rotation;
+                //var pDir = state.camera.rigidbody.rotation;
+                var camRot = Quaternion.AngleAxis(Camera.main.transform.eulerAngles.y, Vector3.up);
+                var pDirA = camRot.y;
+                var pDirB = camRot.w;
+                //var pDirC = camRot.z;  // zero
+                //var pDirD = camRot.x;  // zero
+                
                 GUI.Box(new Rect(0f, 0f, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(timeStr));
                 GUI.Box(new Rect(0f, vecTimerDs.y, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(speedStr));
                 GUI.Box(new Rect(0f, vecTimerDs.y * 2, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(maxSpeed.ToString("MaxSpd: 00.00")));
                 //GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(meshSpeed.ToString("MeshSpd: 00.00")));
-                GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(lastOrb.ToString("LastOrb: 00.00")));
+                GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(state.lastOrbTime.ToString("Orb: 00.00 s") + $" | {state.lastOrbIx}"));
+                GUI.Box(new Rect(0f, vecTimerDs.y * 4, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent($"Pos: {pPos.x:F2},{pPos.z:F2}"));
+                GUI.Box(new Rect(0f, vecTimerDs.y * 5, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent($"Dir: {pDirA:F3},{pDirB:F3}"));
                 //var pv = this.state.PlayerVelocityVector;
                 //Vector2 t = new Vector2(pv.x, pv.z);
                 //GUI.Box(new Rect(0f, vecTimerDs.y * 3, vecTimerDs.x + 10f, vecTimerDs.y), new GUIContent(t.magnitude.ToString("VelMag: 00.00")));
@@ -866,6 +906,8 @@ public class GUIScripts : MonoBehaviour
         //Debug.Log("camera position forward: " + cam.transform.position + cam.transform.TransformDirection(cam.transform.forward));
 
     }
+
+    public const float FADE_OUT_TIME = 2f;
 
     private List<GameObject> lines;
 

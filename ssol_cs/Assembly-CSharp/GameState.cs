@@ -217,6 +217,9 @@ public class GameState : MonoBehaviour
         }
     }
 
+    // ! NOTE: can only set Cheated=true outside this module.
+    public bool Cheated { get => cheated; set => cheated = value || true; }
+
     // Token: 0x06000026 RID: 38
     public void Awake()
     {
@@ -264,6 +267,7 @@ public class GameState : MonoBehaviour
         this.playerRotation.y = 0f;
         this.playerRotation.z = 0f;
         this.pctOfSpdUsing = 0.0;
+        this.cheated = false;
     }
 
     // Token: 0x06000028 RID: 40
@@ -277,7 +281,6 @@ public class GameState : MonoBehaviour
         {
             this.pctOfSpdUsing = (double)this.finalMaxSpeed;
         }
-        this.lastOrb = this.totalTimePlayer;
     }
 
     // Token: 0x06000029 RID: 41
@@ -467,6 +470,9 @@ public class GameState : MonoBehaviour
                 this.orbCollectionList.Add(i);
                 this.orbState[i] = next;
                 this.orbToSplit[i] = this.totalTimePlayer;
+
+                this.lastOrbTime = this.totalTimePlayer;
+                this.lastOrbIx = i;
             }
         }
     }
@@ -642,5 +648,8 @@ public class GameState : MonoBehaviour
     public List<int> orbCollectionList = new List<int>();
     public MenuComponentSelectSplits selectSplits;
 
-    public double lastOrb = 0f;
+    public double lastOrbTime = 0f;
+    public int lastOrbIx = -1;
+
+    private bool cheated = false;
 }
