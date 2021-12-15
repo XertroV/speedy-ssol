@@ -10,6 +10,7 @@ public class GUIScripts : MonoBehaviour
 
     private bool showFrameTimeGraph = false;
     private bool showVelocityGraph = true;
+    private bool showDebugPositionRotEtc = false;
 
     private Vector2 scaleStatic;
     // fix for some resolutions
@@ -22,7 +23,7 @@ public class GUIScripts : MonoBehaviour
     private MenuScripts menuScripts;
     private MenuComponentSelectSplits selectSplits;
 
-    private static string version = "v0.1b";
+    private static string version = "v0.1.1";
 
     private Color gold = new Color(1, 0.8f, 0);
     private Color lightGreen = new Color(0.6f, 0.95f, 0.6f);
@@ -737,6 +738,11 @@ public class GUIScripts : MonoBehaviour
         return new Vector2(input.x * this.scale.x, input.y * this.scale.y);
     }
 
+    public string FormatHMS(float hours, float minutes, float seconds)
+    {
+        return $"{hours.ToString("00")}:{minutes.ToString("00")}:{seconds.ToString("00.000")}";
+    }
+
     // Token: 0x0600000A RID: 10 RVA: 0x00004A9C File Offset: 0x00002C9C
     public void GetTimes()
     {
@@ -764,22 +770,8 @@ public class GUIScripts : MonoBehaviour
                 this.hours.y = this.hours.y + 1f;
             }
         }
-        this.times[0] = string.Concat(new string[]
-        {
-            this.hours.x.ToString("00"),
-            ":",
-            this.minutes.x.ToString("00"),
-            ":",
-            this.seconds.x.ToString("00.000")
-        });
-        this.times[1] = string.Concat(new string[]
-        {
-            this.hours.y.ToString("00"),
-            ":",
-            this.minutes.y.ToString("00"),
-            ":",
-            this.seconds.y.ToString("00.000")
-        });
+        this.times[0] = FormatHMS(hours.x, minutes.x, seconds.x);
+        this.times[1] = FormatHMS(hours.y, minutes.y, seconds.y);
     }
 
     // Token: 0x0600000B RID: 11 RVA: 0x00004CF0 File Offset: 0x00002EF0
