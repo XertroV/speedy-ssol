@@ -1,0 +1,52 @@
+; Hi! you can add comments to split files using the ; and # symbols
+# Like this.
+# A split file has 4 sections. The name is defined with a line starting with `>`, like this:
+>My cool example route!
+
+# Empty lines are fine, btw
+
+# The rest of the file is broken into three sections.
+# Sections start with a line like `splits:` and nothing else on it.
+
+# You name each split. This section is optional
+# You can't use a colon character `:` in split names, but other things should be fine.
+# You should have  with a list of names like this:
+
+splitNames:
+Tutorial - 7
+Donut - 22
+U-Turn - 44
+-> Hallway
+Hallway ->
+-> Park
+Park ->
+Final Countdown
+End - 100
+
+# Split names can vary with different paths.
+# This is the ID of the orb. Use 'O' in-game to toggle the orb display,
+# which will show you the number of each orb as you pick them up.
+
+splitOrbs:
+94
+23
+56
+59
+47
+92
+90
+71
+99
+
+# Splits are the time (in seconds) you hit the corresponding orb.
+
+splits:
+18.66
+37.30
+55.26
+75.81
+90.38
+108.01
+108.63
+126.57
+143.03
