@@ -1,0 +1,30 @@
+>AC's WR [2022-09-23]
+splitOrbs:
+94
+5
+92
+47
+45
+56
+71
+99
+
+splitNames:
+Tutorial
+Donut
+-> Park
+Park ->
+-> Household
+U-Turn
+Final Countdown
+End
+
+splits:
+8.383
+25.144
+40.423
+58.684
+64.381
+83.662
+93.421
+98.701
