@@ -1,11 +1,11 @@
 MyUnitySingleton signature: (spot 1 is MyUnitySingleton)
 558BEC53575683EC0C8B7D088B05????????83EC086A0050E8????????83C41085C00F84DF0000008B05
 
-level 1: main menu
-level 2: intro slides
-level 3: game
-level 4: end screen
-level 5: what happened
-
 MyUnitySingleton signature (take 2)
 558BEC53575683EC0C8B7D088B05????????83EC086A0050E8????????83C41085C00F84DF0000008B05
+
+Level 1: Main Menu
+Level 2: Intro Slides
+Level 3: Game
+Level 4: End Screen
+Level 5: What Happened
