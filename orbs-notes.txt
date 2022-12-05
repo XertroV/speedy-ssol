@@ -1,15 +1,15 @@
- 120 01 (alt: 99) - last orb
- 1c8 08 (alt: 92) - first in park
- 1f8 10 (alt: 90) - orb in park near gate
+ 120 01 (alt: 99) - Last orb
+ 1c8 08 (alt: 92) - First in park
+ 1f8 10 (alt: 90) - Orb in park near gate
 #300 21 (alt: 79) - top of donut (next to central rock)
-#318 22 (alt: 78) - orb fence-side trio near central shrooms
- 3c0 29 (alt: 71) - first orb in final run
- 3d8 30 (alt: 70) - far side starting second trio
+#318 22 (alt: 78) - Orb fence-side trio near central shrooms
+ 3c0 29 (alt: 71) - First orb in final run
+ 3d8 30 (alt: 70) - Far side starting second trio
  4e0 41 (alt: 59) - 2nd orb in hallway
-#4f8 42 (alt: 58) - wall-side orb in trio near park bottom
-#510 43 (alt: 57) - orb player-start-side in trio near park gate
- 528 44 (alt: 56) - orb 44
-#5e8 52 (alt: 48) - first orb
- 600 53 (alt: 47) - bottom of hallway
+#4f8 42 (alt: 58) - Wall-side orb in trio near park bottom
+#510 43 (alt: 57) - Orb player-start-side in trio near park gate
+ 528 44 (alt: 56) - Orb 44
+#5e8 52 (alt: 48) - First orb
+ 600 53 (alt: 47) - Bottom of hallway
 #6c0 61 (alt: 39) - 2nd orb in final run
- 840 77 (alt: 23) - orb 22
+ 840 77 (alt: 23) - Orb 22
